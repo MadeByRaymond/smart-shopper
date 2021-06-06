@@ -12,6 +12,14 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		17A4EE3E7AA04EA1B1234B0D /* Gilroy-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1898F2219A254025AC6E80DF /* Gilroy-Bold.ttf */; };
+		6D57D31F54BA4BB4959D3726 /* Gilroy-Heavy.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 75C1C98435FE47FF931D0B65 /* Gilroy-Heavy.ttf */; };
+		ECB12F6D56674F4A9587CE25 /* Gilroy-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5C4CEC3B17C04963AD963D14 /* Gilroy-Light.ttf */; };
+		292EBB2C15DF493E9C5C6AB5 /* Gilroy-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 989479BC5A5E49C9A0120106 /* Gilroy-Medium.ttf */; };
+		1CD3F755751F4C87B81E6C71 /* Gilroy-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FCFE44F60A654405BB88DCB8 /* Gilroy-Regular.ttf */; };
+		004E801CA0ED4186BE6EB41F /* Triomphe-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 86FB89AF9D6142ED82577F29 /* Triomphe-Bold.ttf */; };
+		7E73A894A2BD45EF86B2F1E7 /* Triomphe-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 615B33574AAA4F639916014F /* Triomphe-Light.ttf */; };
+		8BB2B004CF6E44D2A2444CBE /* Triomphe-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6CBB3A2A4E344F59A226E8A4 /* Triomphe-Regular.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +44,14 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = SmartShopper/main.m; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = SmartShopper/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		1898F2219A254025AC6E80DF /* Gilroy-Bold.ttf */ = {isa = PBXFileReference; name = "Gilroy-Bold.ttf"; path = "../src/assets/fonts/Gilroy/Gilroy-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		75C1C98435FE47FF931D0B65 /* Gilroy-Heavy.ttf */ = {isa = PBXFileReference; name = "Gilroy-Heavy.ttf"; path = "../src/assets/fonts/Gilroy/Gilroy-Heavy.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		5C4CEC3B17C04963AD963D14 /* Gilroy-Light.ttf */ = {isa = PBXFileReference; name = "Gilroy-Light.ttf"; path = "../src/assets/fonts/Gilroy/Gilroy-Light.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		989479BC5A5E49C9A0120106 /* Gilroy-Medium.ttf */ = {isa = PBXFileReference; name = "Gilroy-Medium.ttf"; path = "../src/assets/fonts/Gilroy/Gilroy-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		FCFE44F60A654405BB88DCB8 /* Gilroy-Regular.ttf */ = {isa = PBXFileReference; name = "Gilroy-Regular.ttf"; path = "../src/assets/fonts/Gilroy/Gilroy-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		86FB89AF9D6142ED82577F29 /* Triomphe-Bold.ttf */ = {isa = PBXFileReference; name = "Triomphe-Bold.ttf"; path = "../src/assets/fonts/Triomphe/Triomphe-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		615B33574AAA4F639916014F /* Triomphe-Light.ttf */ = {isa = PBXFileReference; name = "Triomphe-Light.ttf"; path = "../src/assets/fonts/Triomphe/Triomphe-Light.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		6CBB3A2A4E344F59A226E8A4 /* Triomphe-Regular.ttf */ = {isa = PBXFileReference; name = "Triomphe-Regular.ttf"; path = "../src/assets/fonts/Triomphe/Triomphe-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +125,7 @@
 				00E356EF1AD99517003FC87E /* SmartShopperTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
+				96E1AB25238F4D1888E14826 /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -123,6 +140,22 @@
 			);
 			name = Products;
 			sourceTree = "<group>";
+		};
+		96E1AB25238F4D1888E14826 /* Resources */ = {
+			isa = "PBXGroup";
+			children = (
+				1898F2219A254025AC6E80DF /* Gilroy-Bold.ttf */,
+				75C1C98435FE47FF931D0B65 /* Gilroy-Heavy.ttf */,
+				5C4CEC3B17C04963AD963D14 /* Gilroy-Light.ttf */,
+				989479BC5A5E49C9A0120106 /* Gilroy-Medium.ttf */,
+				FCFE44F60A654405BB88DCB8 /* Gilroy-Regular.ttf */,
+				86FB89AF9D6142ED82577F29 /* Triomphe-Bold.ttf */,
+				615B33574AAA4F639916014F /* Triomphe-Light.ttf */,
+				6CBB3A2A4E344F59A226E8A4 /* Triomphe-Regular.ttf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+			path = "";
 		};
 /* End PBXGroup section */
 
@@ -214,6 +247,14 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				17A4EE3E7AA04EA1B1234B0D /* Gilroy-Bold.ttf in Resources */,
+				6D57D31F54BA4BB4959D3726 /* Gilroy-Heavy.ttf in Resources */,
+				ECB12F6D56674F4A9587CE25 /* Gilroy-Light.ttf in Resources */,
+				292EBB2C15DF493E9C5C6AB5 /* Gilroy-Medium.ttf in Resources */,
+				1CD3F755751F4C87B81E6C71 /* Gilroy-Regular.ttf in Resources */,
+				004E801CA0ED4186BE6EB41F /* Triomphe-Bold.ttf in Resources */,
+				7E73A894A2BD45EF86B2F1E7 /* Triomphe-Light.ttf in Resources */,
+				8BB2B004CF6E44D2A2444CBE /* Triomphe-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
