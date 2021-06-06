@@ -1,112 +1,200 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
+// import { Linking } from 'react-native';
+import React from 'react'
+import {Appearance} from 'react-native'
+import { Navigation } from "react-native-navigation";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Provider } from 'react-redux';
+import InAppReview from 'react-native-in-app-review';
+import InAppUpdates from 'sp-react-native-in-app-updates';
 
-import React from 'react';
-import type {Node} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import ProviderConfig from './src/store/providerConfig';
+import ReduxStore from './src/store/storeConfig';
+import {setColorScheme, setTheme} from './src/store/actions';
+import {asyncStores} from './src/includes/variables';
+import {theme} from './src/components/uiComponents';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+// SPLASH SCREENS IMPORTS
+// import Splash from "./src/screens/splashScreen/splashScreen";
 
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+// ONBOARDING SCREENS 
+// import OnBoarding from "./src/screens/onBoarding/onboarding";
+
+// APP SCREENS IMPORTS
+import Home from "./src/screens/home";
+import ListCreation from "./src/screens/listCreation";
+import ListDetails from "./src/screens/listDetails";
+import Settings from "./src/screens/settings";
+
+// DEMO REDUX SCREEN SCREEN
+// Navigation.registerComponentWithRedux('com.lysts.screen.auth', () => Auth, Provider, store);
+
+// SPLASH SCREEN
+// Navigation.registerComponent('com.lysts.screen.splash', () => Splash);
+
+// ONBOARDING SCREEN
+// Navigation.registerComponent('com.lysts.screen.onboarding', () => OnBoarding);
+
+// APP SCREEN COMPONENTS REGISTER
+Navigation.registerComponent('com.mbr.smartshopper.screen.home', () => (props) => ProviderConfig(props, Home), () => Home);
+Navigation.registerComponent('com.mbr.smartshopper.screen.listCreation', () => (props) => ProviderConfig(props, ListCreation), () => ListCreation);
+Navigation.registerComponent('com.mbr.smartshopper.screen.listDetails', () => (props) => ProviderConfig(props, ListDetails), () => ListDetails);
+Navigation.registerComponent('com.mbr.smartshopper.screen.settings', () => (props) => ProviderConfig(props, Settings), () => Settings);
+
+
+// HANDLING DEEP LINKING 
+// Deep Linking Launching Quit App Handler 
+// Linking.getInitialURL().then((url) => {
+//   if(url.toLowerCase().includes('/wishlink/')){
+//     let wishlist_code = url.substring(url.lastIndexOf('/wishlink/') + 10);
+    
+//     if(wishlist_code.length == 6){
+//       global.launchWithCode = wishlist_code;
+//     }
+//   }
+// }).catch((e)=>{});
+
+// Deep Linking Launching Background App Handler 
+// Linking.addEventListener('url', ({url}) =>{
+//   if(url.toLowerCase().includes('/wishlink/')){
+//     let wishlist_code = url.substring(url.lastIndexOf('/wishlink/') + 10);
+    
+//     if(
+//       wishlist_code.length == 6
+//       && typeof global.activeComponentId !== 'undefined' 
+//       && global.activeComponentId !== null 
+//       && (typeof global.activeComponentId == 'string' && global.activeComponentId.trim() !== '')
+//     ){
+//       goToViewWishlistScreen(global.activeComponentId, wishlist_code)
+//     }
+//   }
+// });
+
+// Add Appearance Change Listener 
+Appearance.addChangeListener(()=>{
+  AsyncStorage.getItem(asyncStores.colorScheme).then((result) => {
+    result == 'system' ? ReduxStore.dispatch(setColorScheme(result)) : null
+  }).catch((e) => {/* Do Nothing */})
+})
+
+AsyncStorage.getItem(asyncStores.colorScheme).then((result) => {
+  ReduxStore.dispatch(setColorScheme(result))
+}).catch((e) => {
+  AsyncStorage.setItem(asyncStores.colorScheme, 'light');
+  ReduxStore.dispatch(setColorScheme('light'))
+})
+
+
+// Set App Active Theme 
+AsyncStorage.getItem(asyncStores.theme).then((result) => {
+  ReduxStore.dispatch(setTheme(result))
+}).catch((e) => {
+  AsyncStorage.setItem(asyncStores.theme, Object.keys(theme)[0]);
+  ReduxStore.dispatch(setTheme(Object.keys(theme)[0]))
+})
+
+
+// APP ROOTS 
+// export const splashRoot = {
+//   root: {
+//     component: {
+//       name: 'com.lysts.screen.splash',
+//       options : {
+//         statusBar: {
+//           backgroundColor: 'transparent',
+//           drawBehind: true,
+//           translucent: true,
+//           animate: true,
+//           blur: true,
+//           style: 'dark'
+//         }
+//       }
+//     }
+//   }
+// };
+
+// export const onBoardingRoot = {
+//   root: {
+//     component: {
+//       name: 'com.lysts.screen.onboarding',
+//       options : {
+//         statusBar: {
+//           backgroundColor: 'transparent',
+//           drawBehind: true,
+//           translucent: true,
+//           animate: true,
+//           blur: true,
+//           style: 'dark'
+//         }
+//       }
+//     }
+//   }
+// };
+
+export const mainRoot = {
+  root: {
+    stack: {
+      id: 'AUTH_STACK',
+      children: [
+        {
+          component: {
+            id: 'HOME_SCREEN',
+            name: 'com.mbr.smartshopper.screen.home'
+          }
+        }
+      ],
+      options : {
+        statusBar: {
+          backgroundColor: '#FEFEFD',
+          style: 'dark',
+        }
+      }
+    }
+  }
 };
 
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+// Navigation Default Options
+Navigation.setDefaultOptions({
+  statusBar: {
+    backgroundColor: '#FEFEFD',
+    style: 'dark'
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  topBar: {
+    visible: false,
+    drawBehind: true,
+    animate: false,
+    background: {color: '#ffffff00'},
+    borderColor: '#FFFFFF00'
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  animations:{
+    setRoot :{
+      alpha:{
+        from : 0,
+        to: 1,
+        duration: 400,
+        startDelay: 0,
+        interpolation: 'decelerate'
+      }
+    }
   },
-  highlight: {
-    fontWeight: '700',
-  },
+  layout: {
+    orientation: ['portrait'],
+    componentBackgroundColor: '#ffffff00',
+    backgroundColor: '#ffffff00'
+  }
 });
 
-export default App;
+export const getRoot = async () =>{
+  try {
+    return (await AsyncStorage.getItem(asyncStores.skipOnboarding) == "true") ? mainRoot : mainRoot;
+  } catch(e) {
+    // return onBoardingRoot;
+    return mainRoot;
+  }
+}
+
+
+Navigation.events().registerAppLaunchedListener(async() => {
+  //  Navigation.setRoot(await isLoggedIn() ? mainRoot : loginRoot);
+  //  Navigation.setRoot(await getRoot());
+  Navigation.setRoot(mainRoot);
+});
