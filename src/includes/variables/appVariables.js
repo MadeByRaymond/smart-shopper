@@ -65,4 +65,52 @@ export const currencies = [
     }
 ];
 
-export const customCurrencyId = 902;
+export const unitSymbols = [
+    {
+        id: 1,
+        name: 'Pieces',
+        symbol: 'pcs'
+    },
+    {
+        id: 2,
+        name: 'Units',
+        symbol: 'unts'
+    },
+    {
+        id: 3,
+        name: 'Pounds',
+        symbol: 'lbs'
+    },
+    {
+        id: 4,
+        name: 'Grams',
+        symbol: 'g'
+    },
+    {
+        id: 5,
+        name: 'Kilograms',
+        symbol: 'kg'
+    },
+    {
+        id: 6,
+        name: 'Liters',
+        symbol: 'L'
+    },
+    {
+        id: 7,
+        name: 'Centiliter',
+        symbol: 'cl'
+    },
+    {
+        id: 8,
+        name: 'Meters',
+        symbol: 'm'
+    },
+    {
+        id: 9,
+        name: 'Centimeter',
+        symbol: 'lbs'
+    }
+];
+
+export const customItemId = 902;

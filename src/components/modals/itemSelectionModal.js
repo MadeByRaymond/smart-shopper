@@ -10,15 +10,16 @@ import {OpacityLinks, TouchableOSSpecific} from '../links'
 import CheckedIcon from '../../vectors/checkIcon/checkedIcon'
 
 // Includes 
-import {asyncStores, currencies, customCurrencyId, displayModes} from '../../includes/variables'
+import {asyncStores, currencies, unitSymbols, customItemId, displayModes} from '../../includes/variables'
 
 let setDefaultCurrency = (currencyObj) => {
     AsyncStorage.setItem(asyncStores.currency, JSON.stringify(currencyObj), (e)=>{/* Do Nothing */});
 } 
 
-let renderCurrencies = (activeCurrency, setCurrency, customCurrency, setCustomCurrency, theme, colorScheme, closeFunction) =>{
+let renderItems = (itemsType, activeItem, setItem, customItem, setCustomItem, theme, colorScheme, closeFunction) =>{
+    let items = itemsType == 'currency' ? currencies : unitSymbols
     return (<View>
-        {currencies.map(item => (
+        {items.map(item => (
             <OpacityLinks onPress={() => {
                 // AsyncStorage.setItem(asyncStores.currency, JSON.stringify({
                 //     id: item.id,
@@ -27,16 +28,17 @@ let renderCurrencies = (activeCurrency, setCurrency, customCurrency, setCustomCu
                 //     setCustomCurrency('');
                 //     setCurrency(`${item.name} (${item.symbol})`, item.id);
                 // }).catch((e)=>{/* Do Nothing */});
-                setCurrency({
+                setItem({
                     id:item.id,
                     name:item.name,
                     symbol:item.symbol, 
-                    setCustomCurrency
+                    setCustomItem,
+                    closeFunction
                 })
             }}  key={item.id}>
                 <View style={[styles.itemWrapper, {borderBottomColor: colorScheme.listBorder}]}>
                     <View><Text style={[styles.itemText, {color: colorScheme.textPrimary}]}>{item.name} ({item.symbol})</Text></View>
-                    {(customCurrency.trim() == '' && activeCurrency == item.id) ? (<View style={styles.itemCheckMark}>
+                    {(customItem.trim() == '' && activeItem == item.id) ? (<View style={styles.itemCheckMark}>
                         <CheckedIcon height={28} width={28} checkedStatus={true} theme={theme} />
                     </View>) : null}
                 </View>
@@ -48,14 +50,14 @@ let renderCurrencies = (activeCurrency, setCurrency, customCurrency, setCustomCu
                 placeholder = 'Enter Custom Symbol'
                 placeholderTextColor= {'rgba(159, 162, 176, 0.53);'}
                 style= {[styles.itemTextInput, {color: colorScheme.textPrimary}]}
-                maxLength={5}
-                autoCapitalize= {'characters'}
+                maxLength={itemsType == 'currency' ? 5 : 3}
+                autoCapitalize= {itemsType == 'currency' ? 'characters' : 'none'}
 
-                value={customCurrency}
-                onChangeText = {(val) => setCustomCurrency(val.trim())}
+                value={customItem}
+                onChangeText = {(val) => setCustomItem(val.trim())}
             />
         </View>
-        {customCurrency.trim() != '' ? (<TouchableOSSpecific onPress={()=>{
+        {customItem.trim() != '' ? (<TouchableOSSpecific onPress={()=>{
             // AsyncStorage.setItem(asyncStores.currency, JSON.stringify({
             //     id: customCurrencyId,
             //     symbol: customCurrency
@@ -64,10 +66,10 @@ let renderCurrencies = (activeCurrency, setCurrency, customCurrency, setCustomCu
             //     closeFunction();
             // }).catch((e)=>{/* Do Nothing */});
 
-            setCurrency({
-                id:customCurrencyId,
+            setItem({
+                id:customItemId,
                 name:'',
-                symbol:customCurrency,
+                symbol:customItem,
                 closeFunction
             })
         }}>
@@ -102,7 +104,7 @@ let renderDisplayModes = (setColorScheme, activeDisplayMode, setDisplayMode, the
 
 export function ItemSelectionModal(props) {
     // const [activeCurrency, setCurrency] = useState(currencies[0].id);
-    const [customCurrency, setCustomCurrency] = useState(props.customCurrency);
+    const [customItem, setCustomItem] = useState(props.customItem);
     const [activeDisplayMode, setDisplayMode] = useState('light');
 
     // useEffect(() => {
@@ -126,8 +128,8 @@ export function ItemSelectionModal(props) {
             style={{margin: 0, alignItems: 'center', justifyContent: 'center'}}
         >
             <View style={[styles.container, {backgroundColor: props.colorScheme.modalBackground, paddingBottom: props.type == 'display' ? 5 : 0}]}>
-                { props.type == 'currency' 
-                  ? renderCurrencies(props.defaultCurrency.id, props.setDefaultCurrency, customCurrency, setCustomCurrency, props.theme, props.colorScheme, props.closeFunction)
+                { props.type == 'default' 
+                  ? renderItems(props.subtype, props.defaultItem.id, props.setDefaultItem, customItem, setCustomItem, props.theme, props.colorScheme, props.closeFunction)
                   : props.type == 'display'
                   ? renderDisplayModes(props.setColorScheme, props.activeDisplayMode, props.setDisplayMode, props.theme, props.colorScheme)
                   : null

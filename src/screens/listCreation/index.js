@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Header from '../../components/header';
-import {globalStyles, colorScheme} from '../../components/uiComponents'
+import {globalStyles, colorScheme, theme} from '../../components/uiComponents'
 import {ItemSelectionModal} from '../../components/modals'
 import {OpacityLinks, TouchableOSSpecific} from '../../components/links'
 import FloatingButtonView from '../../components/buttons/floatingButtonView'
@@ -12,13 +12,22 @@ import {TrashIcon, AddIcon, MenuHalfedIcon} from '../../vectors/generalIcons'
 
 // Includes 
 import {updateStatusBarAppearance} from '../../includes/functions';
-import {currencies, customCurrencyId, asyncStores, dHeight, dWidth} from '../../includes/variables';
+import {currencies, unitSymbols, customItemId, asyncStores, featureImages, dHeight, dWidth} from '../../includes/variables';
 
 export class ListCreation extends Component {
 
     state={
         showCurrencyModal: false,
         currencyModalOpenedOnce: false,
+        unitsModalOpenedOnce: false,
+        itemCount: 99,
+        categoryCount: 99,
+
+        setUnitsSymbolModal:{
+            visibility: false,
+            itemId: '',
+            categoryId: ''
+        },
 
 
         currency:{
@@ -26,7 +35,68 @@ export class ListCreation extends Component {
             symbol: currencies[0].symbol
         },
         listTitle: 'Often purchased',
-        listItems: [
+        listItemCategories:[
+            {
+                categoryId: 'category-1',
+                categoryName: 'Dairy'
+            },
+            {
+                categoryId: 'category-2',
+                categoryName: 'Cosmetics'
+            },
+        ],
+        listItems:[
+            {
+                id: 'item-1',
+                category: 'category-1',
+                title: 'Milk',
+                price: '20',
+                units: '31',
+                unitSymbol: {
+                    id: 1,
+                    symbol: 'pcs'
+                },
+                status: 'active'
+            },
+            {
+                id: 'item-2',
+                category: 'category-1',
+                title: 'Butter',
+                price: '24',
+                units: '20',
+                unitSymbol: {
+                    id: 1,
+                    symbol: 'pcs'
+                },
+                status: 'active'
+            },
+            {
+                id: 'item-1',
+                category: 'category-2',
+                title: 'Extra white bathing soap',
+                price: '121',
+                units: '12',
+                unitSymbol: {
+                    id: 1,
+                    symbol: 'pcs'
+                },
+                status: 'active'
+            },
+            {
+                id: 'item-2',
+                category: 'category-2',
+                title: 'Shear-Butter Soap',
+                price: '24',
+                units: '20',
+                unitSymbol: {
+                    id: 1,
+                    symbol: 'pcs'
+                },
+                status: 'active'
+            }
+        ],
+
+        listItemssss: [
             {
                 categoryId: 'category-1',
                 categoryName: 'Dairy',
@@ -91,56 +161,214 @@ export class ListCreation extends Component {
         }
     }
 
-    render() {
-        let activeColorScheme = colorScheme[this.props.colorScheme == 'dark' ? 'dark' : 'light'];
-        return (
-            <View style={[globalStyles.container, {backgroundColor: activeColorScheme.background }]} >
-                <Header
-                    colors={activeColorScheme} 
-                    leftIcons = {['currencySwap']}
-                    currencySwapIconAction = {()=> this.setState({showCurrencyModal: true, currencyModalOpenedOnce: true})}
+    updateListItem = (itemId, categoryId, itemKey, value) => {
+        let itemIndex = this.state.listItems.findIndex((item) => (item.id == itemId && item.category == categoryId))
+        let itemsArray = [...this.state.listItems]
+        itemsArray[itemIndex] = {
+            ...itemsArray[itemIndex],
+            [itemKey]: value
+        }
+        
+        this.setState({
+            listItems: itemsArray
+        })
+    }
 
-                    componentId = {this.props.componentId}
-                 />
+    // removeListItem = ()
 
-                {this.state.currencyModalOpenedOnce ? (<ItemSelectionModal
-                    type= 'currency'
-                    closeFunction = {()=> this.setState({showCurrencyModal: false})}
-                    activeState={this.state.showCurrencyModal}
-                    colorScheme = {activeColorScheme}
-                    theme = {this.props.theme}
-                    defaultCurrency = {this.state.currency}
-                    setDefaultCurrency = {({id, symbol, setCustomCurrency, closeFunction}) => {
-                        setCustomCurrency ? setCustomCurrency('') : null
-                        this.setState({currency: {id, symbol}})
-                        closeFunction ? closeFunction() : null
-                    }}
-                    customCurrency = {this.state.currency.id == customCurrencyId ? this.state.currency.symbol : ''}
-                />) : null}
-                
-                <ScrollView style={globalStyles.scrollView} contentContainerStyle={globalStyles.scrollViewContainer} showsVerticalScrollIndicator={false} snapToEnd>
-                    <View style={styles.listMetaWrapper}>
-                        <View>
-                            <Image style={styles.listImage} source={require('../../assets/img/005-popsicle.png')} />
+    renderItems = (activeColorScheme) =>{
+        // let fff = this.state.listItemCategories.for
+        // let fff;
+        return this.state.listItemCategories.map((category, index) => {
+            let itemsList = this.state.listItems.map((item, key) => {
+                if(item.category.trim() == category.categoryId.trim()){
+                    return (<View style={styles.listItemContainer} key={key}>
+                        <View style={styles.listItemRight}>
+                            <View>
+                                <TextInput
+                                    value= {item.title}
+                                    maxLength= {20}
+                                    onChangeText= {(val) => this.updateListItem(item.id, item.category, 'title', val)}
+
+                                    style={[styles.listItemTitle, {color: activeColorScheme.textPrimary}]}
+                                />
+                            </View>
+                            <View style={styles.listItemPriceWrapper}>
+                                <Text style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}>{this.state.currency.symbol}</Text>
+                                <TextInput
+                                    value= {item.price}
+                                    maxLength={12}
+                                    keyboardType= {'numeric'}
+                                    onChangeText= {(val) => this.updateListItem(item.id, item.category, 'price', val)}
+
+                                    style={[styles.listItemPrice, {color: activeColorScheme.subtext_3, width:dWidth - 16 - 16 - 45 - 45 - 48 - 10 - 15 - 55}]}
+                                />
+                            </View>
                         </View>
-                        <View>
-                            <TextInput 
-                                value={this.state.listTitle}
-                                onChangeText = {(val) => this.setState({listTitle: val})}
-                                maxLength={30}
-                                autoCapitalize={'words'}
+                        <View style={styles.listItemLeft}>
+                            <View style={styles.listItemUnitsWrapper}>
+                                <View style={styles.listItemUnitsBorder}>
+                                    <TextInput 
+                                        value={item.units}
+                                        maxLength= {4}
+                                        keyboardType= {'numeric'}
+                                        onChangeText= {(val) => this.updateListItem(item.id, item.category, 'units', val)}
 
-                                style={[styles.listTitle, {color: activeColorScheme.textPrimary}]}
-                            />
+                                        style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
+                                    />
+                                </View>
+                                <View>
+                                    <OpacityLinks onPress={() => this.setState({
+                                        unitsModalOpenedOnce: true,
+                                        setUnitsSymbolModal:{
+                                            visibility: true,
+                                            itemId: item.id,
+                                            categoryId: item.category
+                                        }
+                                    })}>
+                                        <Text
+                                            style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
+                                        >{item.unitSymbol.symbol}</Text>
+                                    </OpacityLinks>
+                                    
+                                </View>
+                            </View>
+                            <View style={styles.trashButtonWrapper}>
+                                <TouchableOSSpecific onPress={()=> {
+                                    let newListItems = this.state.listItems.filter(filterItem => !(filterItem.id == item.id && filterItem.category == item.category))
+                                    // let listItems = [...this.state.listItems]
+                                    // listItems.pop()
+
+                                    let isLastItemInCategory = this.state.listItems.filter(filterItem => filterItem.category == item.category).length <= 1;
+                                    let isLastItem = this.state.listItems.length <= 1;
+
+                                    if(isLastItem){
+                                        //Do Nothing
+                                    }else if(isLastItemInCategory){
+                                        this.setState({
+                                            listItemCategories: this.state.listItemCategories.filter(filterItem => !(filterItem.categoryId == item.category)),
+                                            listItems: newListItems
+                                        })
+                                    }else {
+                                        this.setState({
+                                            listItems: newListItems
+                                        })
+                                    }
+                                }}>
+                                    <View style={[styles.trashButton, {backgroundColor: this.props.theme.primaryColor, opacity: this.state.listItems.length <= 1 ? 0.6 : 1}]}>
+                                        <TrashIcon 
+                                            height={20}
+                                        />
+                                    </View>    
+                                </TouchableOSSpecific>
+                            </View>
                         </View>
+                    </View>)
+                }
+
+                return null;
+            });
+
+            return (
+                <View  key={index}>
+                    <View style={styles.categoryWrapper}>
+                        <TextInput 
+                            value={category.categoryName}
+                            maxLength={30}
+                            onChangeText = {(val) => {
+                                let categoryIndex = this.state.listItemCategories.findIndex(item => (item.categoryId == category.categoryId))
+                                let categoriesArray = [...this.state.listItemCategories]
+                                categoriesArray[categoryIndex] = {
+                                    ...categoriesArray[categoryIndex],
+                                    categoryName: val
+                                }
+
+                                this.setState({
+                                    listItemCategories: categoriesArray
+                                })
+                            }}
+
+                            style={[styles.listCategoryInput, {color: activeColorScheme.subtext_1}]}
+                        />
                     </View>
-                    
+                    <View style={styles.listItemsWrapper}>
+                        {itemsList}
+                    </View>
                     <View>
+                        <OpacityLinks activeOpacity={0.95} onPress={()=> this.setState(prevState => {
+                            let listItems = [...prevState.listItems, {
+                                id: `item-${prevState.itemCount + 1}`,
+                                category: category.categoryId,
+                                title: 'Item Title',
+                                price: '0',
+                                units: '1',
+                                unitSymbol: unitSymbols[0],
+                                status: 'active'
+                            }]
+
+                            return {
+                                itemCount: prevState.itemCount + 1,
+                                listItems
+                            }
+                        })}>
+                            <View style={[styles.addButton, {borderColor: this.props.theme.primaryColor, backgroundColor: this.props.colorScheme == 'dark' ? this.props.theme.secondaryColor : activeColorScheme.background}]}>
+                                <View style={styles.addButtonIcon}>
+                                    <AddIcon 
+                                        theme={this.props.theme}
+                                    />
+                                </View>
+                                <View><Text style={[styles.addButtonText, {color: this.props.theme.primaryColor}]}>Add Item</Text></View>
+                            </View>
+                        </OpacityLinks>
+                    </View>
+
+                    {(index + 1 == this.state.listItemCategories.length) ? 
+                    (<View style={styles.addSectionButtonWrapper} >
+                        <OpacityLinks style={{zIndex: 9999}} activeOpacity={0.95} onPress={()=> this.setState(prevState => {
+                            let listItems = [...prevState.listItems, {
+                                id: `item-${prevState.itemCount + 1}`,
+                                category: `category-${prevState.categoryCount + 1}`,
+                                title: 'Item Title',
+                                price: '0',
+                                units: '1',
+                                unitSymbol: unitSymbols[0],
+                                status: 'active'
+                            }]
+
+                            let listItemCategories = [...prevState.listItemCategories, {
+                                categoryId: `category-${prevState.categoryCount + 1}`,
+                                categoryName: 'New Category'
+                            }]
+
+                            return {
+                                itemCount: prevState.itemCount + 1,
+                                categoryCount: prevState.categoryCount + 1,
+                                listItems, listItemCategories
+                            }
+                        })}>
+                            <View style={[styles.addSectionButton, {borderColor: this.props.theme.primaryColor, backgroundColor: this.props.colorScheme == 'dark' ? this.props.theme.secondaryColor : activeColorScheme.background}]}>
+                                <AddIcon 
+                                    theme={this.props.theme}
+                                />
+                            </View>
+                        </OpacityLinks>
+                        <View style={[styles.listItemDivider, styles.addSectionButtonDivider, {borderColor: this.props.theme.primaryColor}]}></View>
+                    </View>)
+                    : (<View>
+                        <View style={[styles.listItemDivider, {borderColor: activeColorScheme.listDivider}]}></View>
+                    </View>)}
+                </View>
+            );
+        })
+        for (const category of this.state.listItemCategories) {
+            for (const item of this.state.listItems) {
+                if(item.category.trim() == category.categoryId.trim()){
+                    fff = fff + (<View>
                         <View style={styles.categoryWrapper}>
                             <TextInput 
                                 value={'Dairy'}
                                 maxLength={30}
-
+    
                                 style={[styles.listCategoryInput, {color: activeColorScheme.subtext_1}]}
                             />
                         </View>
@@ -151,7 +379,7 @@ export class ListCreation extends Component {
                                         <TextInput
                                             value= {'Milk'}
                                             maxLength= {20}
-
+    
                                             style={[styles.listItemTitle, {color: activeColorScheme.textPrimary}]}
                                         />
                                     </View>
@@ -162,7 +390,7 @@ export class ListCreation extends Component {
                                             maxLength={12}
                                             keyboardType= {'numeric'}
                                             
-
+    
                                             style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}
                                         />
                                     </View>
@@ -174,7 +402,7 @@ export class ListCreation extends Component {
                                                 value={'29'}
                                                 maxLength= {4}
                                                 keyboardType= {'numeric'}
-
+    
                                                 style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
                                             />
                                         </View>
@@ -201,7 +429,7 @@ export class ListCreation extends Component {
                                         <TextInput
                                             value= {'Milk'}
                                             maxLength= {20}
-
+    
                                             style={[styles.listItemTitle, {color: activeColorScheme.textPrimary}]}
                                         />
                                     </View>
@@ -212,7 +440,7 @@ export class ListCreation extends Component {
                                             maxLength={12}
                                             keyboardType= {'numeric'}
                                             
-
+    
                                             style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}
                                         />
                                     </View>
@@ -224,7 +452,7 @@ export class ListCreation extends Component {
                                                 value={'29'}
                                                 maxLength= {4}
                                                 keyboardType= {'numeric'}
-
+    
                                                 style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
                                             />
                                         </View>
@@ -259,20 +487,106 @@ export class ListCreation extends Component {
                                 </View>
                             </OpacityLinks>
                         </View>
-                    </View>
-                    
-                    <View>
-                        <View style={[styles.listItemDivider, {borderColor: activeColorScheme.listDivider}]}></View>
-                    </View>
+                    </View>)
+                }
+                
+            }
+        }
 
-                    <View style={styles.addSectionButtonWrapper}>
-                        <View style={[styles.addSectionButton, {borderColor: this.props.theme.primaryColor, backgroundColor: this.props.colorScheme == 'dark' ? this.props.theme.secondaryColor : activeColorScheme.background}]}>
-                            <AddIcon 
-                                theme={this.props.theme}
+        // console.log(fff);
+        // return fff
+    }
+
+    render() {
+        let activeColorScheme = colorScheme[this.props.colorScheme == 'dark' ? 'dark' : 'light'];
+        let activeUnitsSymbol = this.state.listItems.filter(item => (item.id == this.state.setUnitsSymbolModal.itemId && item.category == this.state.setUnitsSymbolModal.categoryId))[0]?.unitSymbol
+        return (
+            <View style={[globalStyles.container, {backgroundColor: activeColorScheme.background }]} >
+                <Header
+                    colors={activeColorScheme} 
+                    leftIcons = {['currencySwap']}
+                    currencySwapIconAction = {()=> this.setState({showCurrencyModal: true, currencyModalOpenedOnce: true})}
+
+                    componentId = {this.props.componentId}
+                 />
+
+                {this.state.currencyModalOpenedOnce ? (<ItemSelectionModal
+                    type= 'default'
+                    subtype= 'currency'
+                    closeFunction = {()=> this.setState({showCurrencyModal: false})}
+                    activeState={this.state.showCurrencyModal}
+                    colorScheme = {activeColorScheme}
+                    theme = {this.props.theme}
+                    defaultItem = {this.state.currency}
+                    setDefaultItem = {({id, symbol, setCustomItem, closeFunction}) => {
+                        setCustomItem ? setCustomItem('') : null
+                        this.setState({currency: {id, symbol}})
+                        closeFunction ? closeFunction() : null
+                    }}
+                    customItem = {this.state.currency.id == customItemId ? this.state.currency.symbol : ''}
+                />) : null}
+
+                {this.state.unitsModalOpenedOnce ? (<ItemSelectionModal
+                    type= 'default'
+                    subtype= 'units'
+                    closeFunction = {()=> this.setState({
+                        unitsModalOpenedOnce: false,
+                        setUnitsSymbolModal: {
+                            visibility: false
+                        }
+                    })}
+                    activeState={this.state.setUnitsSymbolModal.visibility}
+                    colorScheme = {activeColorScheme}
+                    theme = {this.props.theme}
+                    defaultItem = {activeUnitsSymbol}
+                    setDefaultItem = {({id, symbol, setCustomItem, closeFunction}) => {
+                        setCustomItem ? setCustomItem('') : null
+                        this.updateListItem(
+                            this.state.setUnitsSymbolModal.itemId,
+                            this.state.setUnitsSymbolModal.categoryId,
+                            'unitSymbol',
+                            {id, symbol}
+                        )
+                        closeFunction ? closeFunction() : null
+                    }}
+                    customItem = {activeUnitsSymbol.id == customItemId ? activeUnitsSymbol.symbol : ''}
+                />) : null}
+
+                <View style={{
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    // justifyContent: 'space-evenly'
+                }}>
+
+                {featureImages.map((item, key) => {
+                    return (
+                        <View key={key} style={{margin:5}}>
+                            <Image style={{width: (dWidth - 16 - 16 - 50) / 5, height: (dWidth - 16 - 16 - 50) / 5}} resizeMethod='resize' source={{uri: item.uri}} resizeMode='contain' />
+                        </View>
+                    )
+                })}
+
+                </View>
+                
+                <ScrollView style={globalStyles.scrollView} contentContainerStyle={globalStyles.scrollViewContainer} showsVerticalScrollIndicator={false} snapToEnd>
+                    <View style={styles.listMetaWrapper}>
+                        <View>
+                            <Image style={styles.listImage} source={require('../../assets/img/005-popsicle.png')} />
+                        </View>
+                        <View>
+                            <TextInput 
+                                value={this.state.listTitle}
+                                onChangeText = {(val) => this.setState({listTitle: val})}
+                                maxLength={30}
+                                autoCapitalize={'words'}
+
+                                style={[styles.listTitle, {color: activeColorScheme.textPrimary}]}
                             />
                         </View>
-                        <View style={[styles.listItemDivider, styles.addSectionButtonDivider, {borderColor: this.props.theme.primaryColor}]}></View>
                     </View>
+
+                    {this.renderItems(activeColorScheme)}
+                    
                 </ScrollView>
 
 
@@ -287,6 +601,8 @@ export class ListCreation extends Component {
                     onPress= {()=>{
                         alert('pie')
                     }} 
+
+                    style={{top: dHeight - 140}}
                 />
             </View>
         )

@@ -17,7 +17,7 @@ import ShoppingLists from '../../components/home/shoppingLists'
 import {colorScheme, globalStyles} from '../../components/uiComponents'
 
 // Includes 
-import {updateStatusBarAppearance} from '../../includes/functions';
+import {updateStatusBarAppearance, navigateToScreen} from '../../includes/functions';
 import {dWidth, dHeight} from '../../includes/variables';
 
 class Home extends Component {
@@ -102,7 +102,7 @@ class Home extends Component {
                     theme={this.props.theme} 
                     colors={activeColorScheme} 
                     onPress= {()=>{
-                        alert('pie')
+                        navigateToScreen(this.props.componentId,'com.mbr.smartshopper.screen.listCreation')
                     }}
                 />) : null}
             </View>

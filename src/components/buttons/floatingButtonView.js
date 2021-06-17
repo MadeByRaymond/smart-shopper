@@ -55,7 +55,7 @@ const FloatingButtonView = (props) => {
     }, [])
 
     return (
-        <Animated.View style={[styles.container, {padding:0,opacity:slideValue}]}>
+        <Animated.View style={[styles.container, {padding:0,opacity:slideValue}, props.style ? props.style : null]}>
             <LinearGradient 
                 colors={[(props.colors.background + '00'), props.colors.background, props.colors.background]}
                 locations={[0.05,0.2,1]} 

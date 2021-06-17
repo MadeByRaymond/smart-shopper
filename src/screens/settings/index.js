@@ -16,7 +16,7 @@ import {setTheme, setColorScheme} from '../../store/actions'
 
 // Includes 
 import {updateStatusBarAppearance} from '../../includes/functions';
-import {currencies, customCurrencyId, displayModes, asyncStores, charities, dHeight} from '../../includes/variables';
+import {currencies, customItemId, displayModes, asyncStores, charities, dHeight} from '../../includes/variables';
 
 export class Settings extends Component {
 
@@ -128,21 +128,22 @@ export class Settings extends Component {
                 />
 
                 {this.state.currencyModalOpenedOnce ? (<ItemSelectionModal
-                    type= 'currency'
+                    type= 'default'
+                    subtype= 'currency'
                     closeFunction = {()=>{this.setState({showCurrencyModal: false})}}
                     activeState={this.state.showCurrencyModal}
                     colorScheme = {activeColorScheme}
                     theme = {this.props.theme}
-                    defaultCurrency = {this.state.defaultCurrency}
-                    ddd = {(display, id) => {this.setState({defaultCurrency: {id: id,display: display}})}}
-                    setDefaultCurrency = {({id, symbol, name, setCustomCurrency, closeFunction}) => {
+                    defaultItem = {this.state.defaultCurrency}
+                    // ddd = {(display, id) => {this.setState({defaultCurrency: {id: id,display: display}})}}
+                    setDefaultItem = {({id, symbol, name, setCustomItem, closeFunction}) => {
                         AsyncStorage.setItem(asyncStores.currency, JSON.stringify({id,symbol})).then(() => {
-                            setCustomCurrency ? setCustomCurrency('') : null;
+                            setCustomItem ? setCustomItem('') : null;
                             this.setState({defaultCurrency: {id, display: `${name} (${symbol})`}});
                             closeFunction ? closeFunction() : null
                         }).catch((e)=>{/* Do Nothing */});
                     }}
-                    customCurrency = {this.state.defaultCurrency.id == customCurrencyId ? this.state.defaultCurrency.display : ''}
+                    customItem = {this.state.defaultCurrency.id == customItemId ? this.state.defaultCurrency.display : ''}
                 />) : null}
 
                 <ItemSelectionModal
