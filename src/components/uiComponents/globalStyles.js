@@ -34,6 +34,8 @@ export const globalStyles = StyleSheet.create({
         fontSize: 25,
     },
 
+
+    // List Actions Style 
     categoryWrapper:{
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -82,5 +84,27 @@ export const globalStyles = StyleSheet.create({
         fontSize: 15,
 
         color: '#9FA2B0'
-    }
+    },
+
+
+    // Modal Styles
+    modalBgWrapper:{
+        flex: 1, 
+        backgroundColor: 'transparent',
+        justifyContent: 'flex-end'
+    },
+    modalBg:{
+        paddingHorizontal: 26,
+        paddingTop: 48,
+        paddingBottom: 30,
+        borderTopLeftRadius: 13,
+        borderTopRightRadius: 13,
+        elevation: -10
+    },
+    modalTitle:{
+        fontFamily: 'Gilroy-Medium', 
+        fontSize: 22,
+
+        marginBottom: 17
+    },
 })

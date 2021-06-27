@@ -92,9 +92,9 @@ class ListDetails extends Component {
                     onSwipeComplete= {()=> this.setState({syncModal: false})}
                     style={{margin: 0}}
                 >
-                    <View style={styles.syncModalBgWrapper}>
-                        <View style={[styles.syncModalBg,{backgroundColor: activeColorScheme.modalBackground,}]}>
-                            <View><Text style={[styles.syncModalTitle, {color: activeColorScheme.textPrimary}]}>Sync Your List</Text></View>
+                    <View style={globalStyles.modalBgWrapper}>
+                        <View style={[globalStyles.modalBg,{backgroundColor: activeColorScheme.modalBackground,}]}>
+                            <View><Text style={[globalStyles.modalTitle, {color: activeColorScheme.textPrimary}]}>Sync Your List</Text></View>
                             <View><Text style={[styles.syncModalContentText, {color: activeColorScheme.textPrimary}]}>Syncing your list to the Smart Shopper cloud means you can now share you shopping list with other users. This also means giving them access to mark list items as done/completed</Text></View>
                             <View><Text style={[styles.syncModalContentText, {color: activeColorScheme.textPrimary}]}>You will need an internet connection to sync the current state of your list locally with the cloud</Text></View>
                             
@@ -312,25 +312,25 @@ const styles = StyleSheet.create({
         lineHeight: 29,
     },
 
-    syncModalBgWrapper:{
-        flex: 1, 
-        backgroundColor: 'transparent',
-        justifyContent: 'flex-end'
-    },
-    syncModalBg:{
-        paddingHorizontal: 26,
-        paddingTop: 48,
-        paddingBottom: 30,
-        borderTopLeftRadius: 13,
-        borderTopRightRadius: 13,
-        elevation: -10
-    },
-    syncModalTitle:{
-        fontFamily: 'Gilroy-Medium', 
-        fontSize: 22,
+    // syncModalBgWrapper:{
+    //     flex: 1, 
+    //     backgroundColor: 'transparent',
+    //     justifyContent: 'flex-end'
+    // },
+    // syncModalBg:{
+    //     paddingHorizontal: 26,
+    //     paddingTop: 48,
+    //     paddingBottom: 30,
+    //     borderTopLeftRadius: 13,
+    //     borderTopRightRadius: 13,
+    //     elevation: -10
+    // },
+    // syncModalTitle:{
+    //     fontFamily: 'Gilroy-Medium', 
+    //     fontSize: 22,
 
-        marginBottom: 17
-    },
+    //     marginBottom: 17
+    // },
     syncModalContentText:{
         fontFamily: 'Gilroy-Medium', 
         fontSize: 15.5,

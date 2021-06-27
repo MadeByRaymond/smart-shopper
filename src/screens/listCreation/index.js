@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { View, Text, Image, TextInput, ScrollView, StyleSheet } from 'react-native'
 import { connect } from 'react-redux'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import FeatureImagesModal from 'react-native-modal'
 
 import Header from '../../components/header';
 import {globalStyles, colorScheme, theme} from '../../components/uiComponents'
@@ -9,6 +10,7 @@ import {ItemSelectionModal} from '../../components/modals'
 import {OpacityLinks, TouchableOSSpecific} from '../../components/links'
 import FloatingButtonView from '../../components/buttons/floatingButtonView'
 import {TrashIcon, AddIcon, MenuHalfedIcon} from '../../vectors/generalIcons'
+import CheckedIcon from '../../vectors/checkIcon/checkedIcon'
 
 // Includes 
 import {updateStatusBarAppearance} from '../../includes/functions';
@@ -22,6 +24,9 @@ export class ListCreation extends Component {
         unitsModalOpenedOnce: false,
         itemCount: 99,
         categoryCount: 99,
+
+        activeFeatureImage: featureImages[0].id,
+        featureImagesModal: false,
 
         setUnitsSymbolModal:{
             visibility: false,
@@ -172,6 +177,10 @@ export class ListCreation extends Component {
         this.setState({
             listItems: itemsArray
         })
+    }
+
+    createList=() => {
+
     }
 
     // removeListItem = ()
@@ -497,6 +506,103 @@ export class ListCreation extends Component {
         // return fff
     }
 
+    renderModals= (activeColorScheme, activeUnitsSymbol) => (
+        <View>
+            {this.state.currencyModalOpenedOnce ? (<ItemSelectionModal
+                type= 'default'
+                subtype= 'currency'
+                closeFunction = {()=> this.setState({showCurrencyModal: false})}
+                activeState={this.state.showCurrencyModal}
+                colorScheme = {activeColorScheme}
+                theme = {this.props.theme}
+                defaultItem = {this.state.currency}
+                setDefaultItem = {({id, symbol, setCustomItem, closeFunction}) => {
+                    setCustomItem ? setCustomItem('') : null
+                    this.setState({currency: {id, symbol}})
+                    closeFunction ? closeFunction() : null
+                }}
+                customItem = {this.state.currency.id == customItemId ? this.state.currency.symbol : ''}
+            />) : null}
+
+            {this.state.unitsModalOpenedOnce ? (<ItemSelectionModal
+                type= 'default'
+                subtype= 'units'
+                closeFunction = {()=> this.setState({
+                    unitsModalOpenedOnce: false,
+                    setUnitsSymbolModal: {
+                        visibility: false
+                    }
+                })}
+                activeState={this.state.setUnitsSymbolModal.visibility}
+                colorScheme = {activeColorScheme}
+                theme = {this.props.theme}
+                defaultItem = {activeUnitsSymbol}
+                setDefaultItem = {({id, symbol, setCustomItem, closeFunction}) => {
+                    setCustomItem ? setCustomItem('') : null
+                    this.updateListItem(
+                        this.state.setUnitsSymbolModal.itemId,
+                        this.state.setUnitsSymbolModal.categoryId,
+                        'unitSymbol',
+                        {id, symbol}
+                    )
+                    closeFunction ? closeFunction() : null
+                }}
+                customItem = {activeUnitsSymbol.id == customItemId ? activeUnitsSymbol.symbol : ''}
+            />) : null}
+
+
+            <FeatureImagesModal 
+                isVisible={this.state.featureImagesModal}
+                hideModalContentWhileAnimating={true}
+                swipeDirection={'down'}
+                animationIn= {'slideInUp'}
+                animationInTiming={1}
+                animationOut= {'slideOutDown'}
+                animationOutTiming={500}
+                backdropOpacity={0.21}
+                propagateSwipe={true}
+                onBackButtonPress= {()=> this.setState({featureImagesModal: false})}
+                onBackdropPress= {()=> this.setState({featureImagesModal: false})}
+                onSwipeComplete= {()=> this.setState({featureImagesModal: false})}
+                style={{margin: 0}}
+            >
+                <View style={globalStyles.modalBgWrapper}>
+                    <View style={[globalStyles.modalBg,{backgroundColor: activeColorScheme.modalBackground, paddingHorizontal:16, paddingTop: 32}]}>
+                        
+                        <View><Text style={[globalStyles.modalTitle, {color: activeColorScheme.textPrimary}]}>Select Image</Text></View>
+                        <View style={{maxHeight: dHeight - 27 - 17 - 62 - (dHeight / 8) }}>
+                            <ScrollView>
+                                <View onStartShouldSetResponder={() => true} style={{
+                                    flexDirection: 'row',
+                                    flexWrap: 'wrap',
+                                    // justifyContent: 'space-evenly'
+                                }}>
+                                    {featureImages.map((item, key) => {
+                                        let imageDim = (dWidth - 16 - 16 - 50) / 5;
+                                        return (
+                                            <OpacityLinks key={key} onPress={()=>{
+                                                this.setState({
+                                                    activeFeatureImage : item.id
+                                                })
+                                            }}>
+                                                <View style={{margin:5}}>
+                                                    <Image style={{width: imageDim, height: imageDim, maxHeight:80, maxWidth:80}} resizeMethod='resize' source={{uri: item.uri}} resizeMode='contain' />
+                                                    { this.state.activeFeatureImage == item.id ? <View style={styles.itemCheckMark}>
+                                                        <CheckedIcon height={28} width={28} checkedStatus={true} theme={this.props.theme} />
+                                                    </View> : null}
+                                                </View>
+                                            </OpacityLinks>
+                                        )
+                                    })}
+                                </View>
+                            </ScrollView>
+                        </View>  
+                    </View>
+                </View>
+            </FeatureImagesModal>
+        </View>
+    )
+
     render() {
         let activeColorScheme = colorScheme[this.props.colorScheme == 'dark' ? 'dark' : 'light'];
         let activeUnitsSymbol = this.state.listItems.filter(item => (item.id == this.state.setUnitsSymbolModal.itemId && item.category == this.state.setUnitsSymbolModal.categoryId))[0]?.unitSymbol
@@ -510,69 +616,15 @@ export class ListCreation extends Component {
                     componentId = {this.props.componentId}
                  />
 
-                {this.state.currencyModalOpenedOnce ? (<ItemSelectionModal
-                    type= 'default'
-                    subtype= 'currency'
-                    closeFunction = {()=> this.setState({showCurrencyModal: false})}
-                    activeState={this.state.showCurrencyModal}
-                    colorScheme = {activeColorScheme}
-                    theme = {this.props.theme}
-                    defaultItem = {this.state.currency}
-                    setDefaultItem = {({id, symbol, setCustomItem, closeFunction}) => {
-                        setCustomItem ? setCustomItem('') : null
-                        this.setState({currency: {id, symbol}})
-                        closeFunction ? closeFunction() : null
-                    }}
-                    customItem = {this.state.currency.id == customItemId ? this.state.currency.symbol : ''}
-                />) : null}
-
-                {this.state.unitsModalOpenedOnce ? (<ItemSelectionModal
-                    type= 'default'
-                    subtype= 'units'
-                    closeFunction = {()=> this.setState({
-                        unitsModalOpenedOnce: false,
-                        setUnitsSymbolModal: {
-                            visibility: false
-                        }
-                    })}
-                    activeState={this.state.setUnitsSymbolModal.visibility}
-                    colorScheme = {activeColorScheme}
-                    theme = {this.props.theme}
-                    defaultItem = {activeUnitsSymbol}
-                    setDefaultItem = {({id, symbol, setCustomItem, closeFunction}) => {
-                        setCustomItem ? setCustomItem('') : null
-                        this.updateListItem(
-                            this.state.setUnitsSymbolModal.itemId,
-                            this.state.setUnitsSymbolModal.categoryId,
-                            'unitSymbol',
-                            {id, symbol}
-                        )
-                        closeFunction ? closeFunction() : null
-                    }}
-                    customItem = {activeUnitsSymbol.id == customItemId ? activeUnitsSymbol.symbol : ''}
-                />) : null}
-
-                <View style={{
-                    flexDirection: 'row',
-                    flexWrap: 'wrap',
-                    // justifyContent: 'space-evenly'
-                }}>
-
-                {featureImages.map((item, key) => {
-                    return (
-                        <View key={key} style={{margin:5}}>
-                            <Image style={{width: (dWidth - 16 - 16 - 50) / 5, height: (dWidth - 16 - 16 - 50) / 5}} resizeMethod='resize' source={{uri: item.uri}} resizeMode='contain' />
-                        </View>
-                    )
-                })}
-
-                </View>
+                {this.renderModals(activeColorScheme, activeUnitsSymbol)}
                 
                 <ScrollView style={globalStyles.scrollView} contentContainerStyle={globalStyles.scrollViewContainer} showsVerticalScrollIndicator={false} snapToEnd>
                     <View style={styles.listMetaWrapper}>
-                        <View>
-                            <Image style={styles.listImage} source={require('../../assets/img/005-popsicle.png')} />
-                        </View>
+                        <OpacityLinks onPress={()=>this.setState({featureImagesModal: true})}>
+                            <View>
+                                <Image style={styles.listImage} source={{uri: featureImages.find(item => (item.id == this.state.activeFeatureImage)).uri}} />
+                            </View>
+                        </OpacityLinks>
                         <View>
                             <TextInput 
                                 value={this.state.listTitle}
@@ -784,6 +836,12 @@ const styles = StyleSheet.create({
         width: '100%',
         marginVertical: 0,
         zIndex: 0
+    },
+
+    itemCheckMark:{
+        position: 'absolute',
+        top: -4,
+        right: -4
     }
 })
 

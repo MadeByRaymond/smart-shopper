@@ -173,8 +173,8 @@ export class Settings extends Component {
                     onSwipeComplete= {()=> this.setState({charityModal: false})}
                     style={{margin: 0}}
                 >
-                    <View style={styles.charityModalBgWrapper}>
-                        <View style={[styles.charityModalBg,{backgroundColor: activeColorScheme.modalBackground,}]}>
+                    <View style={globalStyles.modalBgWrapper}>
+                        <View style={[globalStyles.modalBg,{backgroundColor: activeColorScheme.modalBackground,}]}>
                             <View>
                                 <View>
                                     <Image 
@@ -328,19 +328,19 @@ const styles = StyleSheet.create({
         paddingBottom: 30
     },
 
-    charityModalBgWrapper:{
-        flex: 1, 
-        backgroundColor: 'transparent',
-        justifyContent: 'flex-end'
-    },
-    charityModalBg:{
-        paddingHorizontal: 26,
-        paddingTop: 48,
-        paddingBottom: 30,
-        borderTopLeftRadius: 13,
-        borderTopRightRadius: 13,
-        elevation: -10
-    },
+    // charityModalBgWrapper:{
+    //     flex: 1, 
+    //     backgroundColor: 'transparent',
+    //     justifyContent: 'flex-end'
+    // },
+    // charityModalBg:{
+    //     paddingHorizontal: 26,
+    //     paddingTop: 48,
+    //     paddingBottom: 30,
+    //     borderTopLeftRadius: 13,
+    //     borderTopRightRadius: 13,
+    //     elevation: -10
+    // },
     charityModalTitle:{
         fontFamily: 'Gilroy-Medium', 
         fontSize: 20,
