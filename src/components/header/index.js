@@ -69,9 +69,9 @@ const Header = (props) => {
                 ? <View><Text style={[styles.noBackTitle, {color: props.colors.textPrimary}]}>{props.title ? props.title : null}</Text></View>
                 : <OpacityLinks onPress={()=>{
                     Navigation.pop(props.componentId)
-                }}><View><BackIcon width={24} height={21} colors={props.colors}  /></View></OpacityLinks>
+                }}><View><BackIcon width={24} height={21} colors={props.colors} /></View></OpacityLinks>
             }
-            {props.title && !props.hideBackButton ? <View><Text>{props.title}</Text></View> : null }
+            {props.title && !props.hideBackButton ? <View><Text style={[styles.withBackTitle,{color: props.colors.textPrimary}]}>{props.title}</Text></View> : null }
             <View style={styles.leftIconsWrapper}>
                 {/* Search Icon  */}
                 {checkIfDisplayIcon(props.leftIcons, 'search') ? showSearchBar ? null : <OpacityLinks onPress={()=> setShowSearchBar(true)}><View style={styles.leftIcon}><SearchIcon width={24} height={21} colors={props.colors} /></View></OpacityLinks> : null}
@@ -105,6 +105,11 @@ const styles = StyleSheet.create({
     noBackTitle:{
         fontFamily: 'Gilroy-Medium',
         fontSize: 28,
+    },
+    withBackTitle:{
+        fontFamily: 'Gilroy-Medium',
+        fontSize: 16,
+        textAlign: 'center'
     },
     leftIconsWrapper:{
         flexDirection: 'row',
