@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { Navigation } from "react-native-navigation";
 import LottieView from 'lottie-react-native';
 import {getColorFromURL} from 'rn-dominant-color'
+import Realm from "realm";
 
 // ***** Component Imports *****
 // Icons and Vectors 
@@ -16,25 +17,62 @@ import FloatingButtonView from '../../components/buttons/floatingButtonView'
 import ShoppingLists from '../../components/home/shoppingLists'
 import {colorScheme, globalStyles} from '../../components/uiComponents'
 
+import {ListSchemas} from '../../realm-storage/schemas'
+
 // Includes 
 import {updateStatusBarAppearance, navigateToScreen} from '../../includes/functions';
-import {dWidth, dHeight} from '../../includes/variables';
+import {dWidth, dHeight, realmStorePath} from '../../includes/variables';
 
 class Home extends Component {
     state={
         color: '#000000',
         text: this.props.colorScheme,
-        items: true
+        items: true,
+
+        shoppingLists : [],
     }
 
     componentDidMount(){
         updateStatusBarAppearance(this.props);
+
+        this.getListsFromStore();
     }
 
     componentDidUpdate(prevProps){
         if(prevProps.colorScheme != this.props.colorScheme){
             updateStatusBarAppearance(this.props);
         }
+    }
+
+    getListsFromStore = () => {
+        Realm.open({
+            path: realmStorePath,
+            schema: [
+                ListSchemas.listSchema,
+                ListSchemas.listItemsSchema,
+                ListSchemas.unitSymbolSchema,
+                ListSchemas.listItemsCategoriesSchema,
+                ListSchemas.currencySchema
+            ]
+        }).then(realm => {
+            let shoppingLists = realm.objects('Lists').sorted("dateCreated");
+
+            shoppingLists.addListener((list,changes)=>{
+                // Update UI in response to inserted objects
+                changes.insertions.forEach((index) => {
+                    let insertedLists = list[index];
+
+                    console.log(
+                      `insertedList: ${JSON.stringify(insertedLists, null, 2)}`
+                    );
+                });
+
+                console.log('Insertions ==> ', changes.insertions);
+            });
+
+            this.setState({shoppingLists})
+            // realm.close();
+        })
     }
 
     renderView = (activeColorScheme) =>{
@@ -48,13 +86,24 @@ class Home extends Component {
                 >
                     <View><Text style={[globalStyles.subtext, {color: activeColorScheme.subtext_1}]}>Your Starred Lists</Text></View>
 
-                    <ShoppingLists colors={activeColorScheme} starred={true} newScreenProps={{componentId: this.props.componentId}} />
+                    {/* <ShoppingLists colors={activeColorScheme} starred={true} newScreenProps={{componentId: this.props.componentId}} /> */}
 
                     <View><Text style={[globalStyles.subtext, {color: activeColorScheme.subtext_1}]}>Recently Created</Text></View>
 
+                    {/* <ShoppingLists colors={activeColorScheme} newScreenProps={{componentId: this.props.componentId}} />
                     <ShoppingLists colors={activeColorScheme} newScreenProps={{componentId: this.props.componentId}} />
-                    <ShoppingLists colors={activeColorScheme} newScreenProps={{componentId: this.props.componentId}} />
-                    <ShoppingLists colors={activeColorScheme} newScreenProps={{componentId: this.props.componentId}} />
+                    <ShoppingLists colors={activeColorScheme} newScreenProps={{componentId: this.props.componentId}} /> */}
+
+                    {this.state.shoppingLists.map((item, key) => (
+                        <ShoppingLists 
+                            key={key}
+                            colors={activeColorScheme} 
+                            newScreenProps={{componentId: this.props.componentId}} 
+                            itemsCount = {item.items.length}
+                            listName = {item.name}
+                            listId = {item._id}
+                        />
+                    ))}
 
             </ScrollView>)
         }else{

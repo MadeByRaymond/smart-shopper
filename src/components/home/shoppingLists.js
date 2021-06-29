@@ -9,15 +9,15 @@ import {navigateToScreen} from '../../includes/functions'
 
 const shoppingLists = (props) => {
     return (
-        <OpacityLinks onPress={()=> navigateToScreen(props.newScreenProps.componentId,'com.mbr.smartshopper.screen.listDetails')}>
+        <OpacityLinks onPress={()=> navigateToScreen(props.newScreenProps.componentId,'com.mbr.smartshopper.screen.listDetails',{listId: props.listId})}>
             <View style={styles.itemContainer}>
                 <View style={styles.left}>
                     <View>
                         <Image style={styles.image} source={require('../../assets/img/005-popsicle.png')} />
                     </View>
                     <View>
-                        <View><Text style={[styles.title, {color: props.colors.textPrimary}]}>Often purchased</Text></View>
-                        <View><Text style={[styles.subtext, {color: props.colors.subtext_2}]}>10 products</Text></View>
+                        <View><Text style={[styles.title, {color: props.colors.textPrimary}]}>{props.listName}</Text></View>
+                        <View><Text style={[styles.subtext, {color: props.colors.subtext_2}]}>{props.itemsCount} products</Text></View>
                     </View>
                 </View>
                 <View style={styles.right}>

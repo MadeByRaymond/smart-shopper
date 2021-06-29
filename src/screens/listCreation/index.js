@@ -2,7 +2,10 @@ import React, { Component } from 'react'
 import { View, Text, Image, TextInput, ScrollView, StyleSheet } from 'react-native'
 import { connect } from 'react-redux'
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import FeatureImagesModal from 'react-native-modal'
+import FeatureImagesModal from 'react-native-modal';
+import Realm from "realm";
+import {ObjectId} from 'bson';
+import {getUniqueId} from 'react-native-device-info';
 
 import Header from '../../components/header';
 import {globalStyles, colorScheme, theme} from '../../components/uiComponents'
@@ -12,9 +15,12 @@ import FloatingButtonView from '../../components/buttons/floatingButtonView'
 import {TrashIcon, AddIcon, MenuHalfedIcon} from '../../vectors/generalIcons'
 import CheckedIcon from '../../vectors/checkIcon/checkedIcon'
 
+import {ListSchemas} from '../../realm-storage/schemas'
+
 // Includes 
 import {updateStatusBarAppearance} from '../../includes/functions';
-import {currencies, unitSymbols, customItemId, asyncStores, featureImages, dHeight, dWidth} from '../../includes/variables';
+import {currencies, unitSymbols, customItemId, asyncStores, featureImages, realmStorePath, dHeight, dWidth} from '../../includes/variables';
+import { Navigation } from 'react-native-navigation';
 
 export class ListCreation extends Component {
 
@@ -22,8 +28,8 @@ export class ListCreation extends Component {
         showCurrencyModal: false,
         currencyModalOpenedOnce: false,
         unitsModalOpenedOnce: false,
-        itemCount: 99,
-        categoryCount: 99,
+        itemCount: 1,
+        categoryCount: 1,
 
         activeFeatureImage: featureImages[0].id,
         featureImagesModal: false,
@@ -39,112 +45,25 @@ export class ListCreation extends Component {
             id: currencies[0].id,
             symbol: currencies[0].symbol
         },
-        listTitle: 'Often purchased',
+        listTitle: 'New List Title',
         listItemCategories:[
             {
                 categoryId: 'category-1',
-                categoryName: 'Dairy'
-            },
-            {
-                categoryId: 'category-2',
-                categoryName: 'Cosmetics'
-            },
+                categoryName: 'New Category'
+            }
         ],
         listItems:[
             {
                 id: 'item-1',
                 category: 'category-1',
-                title: 'Milk',
-                price: '20',
-                units: '31',
+                title: 'Item Title',
+                price: '0',
+                units: '1',
                 unitSymbol: {
                     id: 1,
                     symbol: 'pcs'
                 },
                 status: 'active'
-            },
-            {
-                id: 'item-2',
-                category: 'category-1',
-                title: 'Butter',
-                price: '24',
-                units: '20',
-                unitSymbol: {
-                    id: 1,
-                    symbol: 'pcs'
-                },
-                status: 'active'
-            },
-            {
-                id: 'item-1',
-                category: 'category-2',
-                title: 'Extra white bathing soap',
-                price: '121',
-                units: '12',
-                unitSymbol: {
-                    id: 1,
-                    symbol: 'pcs'
-                },
-                status: 'active'
-            },
-            {
-                id: 'item-2',
-                category: 'category-2',
-                title: 'Shear-Butter Soap',
-                price: '24',
-                units: '20',
-                unitSymbol: {
-                    id: 1,
-                    symbol: 'pcs'
-                },
-                status: 'active'
-            }
-        ],
-
-        listItemssss: [
-            {
-                categoryId: 'category-1',
-                categoryName: 'Dairy',
-                items: [
-                    {
-                        id: 'item-1',
-                        title: 'Milk',
-                        price: '20',
-                        units: '31',
-                        unitSymbol: 'lb',
-                        status: 'active'
-                    },
-                    {
-                        id: 'item-2',
-                        title: 'Butter',
-                        price: '24',
-                        units: '20',
-                        unitSymbol: 'gal',
-                        status: 'active'
-                    }
-                ]
-            },
-            {
-                categoryId: 'category-2',
-                categoryName: 'Cosmetics',
-                items: [
-                    {
-                        id: 'item-1',
-                        title: 'Extra white bathing soap',
-                        price: '121',
-                        units: '12',
-                        unitSymbol: 'pcs',
-                        status: 'active'
-                    },
-                    {
-                        id: 'item-2',
-                        title: 'Shear-Butter Soap',
-                        price: '24',
-                        units: '20',
-                        unitSymbol: 'pcs',
-                        status: 'active'
-                    }
-                ]
             }
         ]
     }
@@ -180,7 +99,40 @@ export class ListCreation extends Component {
     }
 
     createList=() => {
+        Realm.open({
+            path: realmStorePath,
+            schema: [
+                ListSchemas.listSchema,
+                ListSchemas.listItemsSchema,
+                ListSchemas.unitSymbolSchema,
+                ListSchemas.listItemsCategoriesSchema,
+                ListSchemas.currencySchema
+            ]
+        }).then(realm => {
+            realm.write(() => {
+                this.realm.create("Lists", {
+                    _id: new ObjectId().toHexString(),
+                    _partition : 'public',
+                    synced: false,
+                    name: this.state.listTitle,
+                    items: this.state.listItems,
+                    categories: this.state.listItemCategories,
+                    currency: this.state.currency,
+                    featureImage: this.state.activeFeatureImage,
+                    code: '',
+                    status: "active",
+                    ownerId: getUniqueId,
+                    dateCreated: new Date(),
+                    dateModified: new Date(),
+                    lastViewed: new Date(),
+                    lastActivityLog: 'created new list'
+                })
+            })
 
+            realm.close();
+
+            Navigation.pop(this.props.componentId)
+        })
     }
 
     // removeListItem = ()
@@ -610,6 +562,8 @@ export class ListCreation extends Component {
             <View style={[globalStyles.container, {backgroundColor: activeColorScheme.background }]} >
                 <Header
                     colors={activeColorScheme} 
+                    title = {'New List'}
+                    hideBackButton = {false}
                     leftIcons = {['currencySwap']}
                     currencySwapIconAction = {()=> this.setState({showCurrencyModal: true, currencyModalOpenedOnce: true})}
 

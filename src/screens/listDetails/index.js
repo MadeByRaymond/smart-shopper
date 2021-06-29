@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { Text, StyleSheet, View, ScrollView, BackHandler } from 'react-native'
 import { connect } from 'react-redux'
 import SyncModal from 'react-native-modal'
+import Realm from "realm";
 
 import Header from '../../components/header';
 import {globalStyles, colorScheme} from '../../components/uiComponents'
@@ -10,11 +11,15 @@ import FloatingButtonView from '../../components/buttons/floatingButtonView'
 import Button from '../../components/buttons/singleButton'
 import {ShareIcon, CopyIcon, EditIcon, TrashIcon} from '../../vectors/generalIcons'
 
+import {ListSchemas} from '../../realm-storage/schemas'
+
 // Includes 
 import {updateStatusBarAppearance} from '../../includes/functions';
-import {dWidth} from '../../includes/variables';
+import {dWidth, realmStorePath, currencies,featureImages} from '../../includes/variables';
 
 class ListDetails extends Component {
+
+    realm;
 
     state={
         showButtonLabels: false,
@@ -23,7 +28,46 @@ class ListDetails extends Component {
         isOwner: false,
         isSynced: true,
         isSyncing: false,
-        isStarred: false
+        isStarred: false,
+
+        listDetails: {
+            _id: '',
+            _partition : '',
+            synced: false,
+            name: '',
+            items: [
+                {
+                    id: '',
+                    category: '',
+                    title: '',
+                    price: '0',
+                    units: '1',
+                    unitSymbol: {
+                        id: 1,
+                        symbol: ''
+                    },
+                    status: ''
+                }
+            ],
+            categories: [
+                {
+                    categoryId: '',
+                    categoryName: ''
+                }
+            ],
+            currency: {
+                id: currencies[0].id,
+                symbol: currencies[0].symbol
+            },
+            featureImage: featureImages[0].id,
+            code: '',
+            status: "",
+            ownerId: '',
+            dateCreated: new Date(),
+            dateModified: new Date(),
+            lastViewed: new Date(),
+            lastActivityLog: ''
+        }
     }
 
     backHandler;
@@ -33,17 +77,16 @@ class ListDetails extends Component {
 
         this.backHandler = BackHandler.addEventListener("hardwareBackPress", (e) =>{
             // BackHandler.exitApp
-            alert(this.state.showActionsMenu)
             
             if(this.state.showActionsMenu){
                 this.setState({showActionsMenu: false})
                 return true;
             }else{
                 return false
-            }
-    
-            
+            } 
         });
+
+        this.getListDetails();
     }
 
     componentDidUpdate(prevProps){
@@ -54,6 +97,41 @@ class ListDetails extends Component {
 
     componentWillUnmount(){
         this.backHandler.remove()
+    }
+
+    getListDetails = async() => {
+        try {
+            let realm = await Realm.open({
+                path: realmStorePath,
+                schema: [
+                    ListSchemas.listSchema,
+                    ListSchemas.listItemsSchema,
+                    ListSchemas.unitSymbolSchema,
+                    ListSchemas.listItemsCategoriesSchema,
+                    ListSchemas.currencySchema
+                ]
+            });
+            
+            let lists = realm.objects('Lists');
+            
+            let listDetails = lists.filtered(`_id == '${this.props.listId}'`)[0]
+
+            lists.addListener((tasks,changes)=>{
+                // Update UI in response to modified objects
+                // `newModifications` contains object indexes from after they were modified
+                changes.newModifications.forEach((index) => {
+                    let modifiedTask = tasks[index];
+                    console.log(`modifiedTask: ${JSON.stringify(modifiedTask, null, 2)}`);
+                    // ...
+                });
+            });
+
+            this.setState({
+                listDetails
+            })
+        } catch (error) {
+            
+        }
     }
 
     render() {
