@@ -9,6 +9,7 @@ import {globalStyles, colorScheme} from '../../components/uiComponents'
 import CheckedIcon from '../../vectors/checkIcon/checkedIcon';
 import FloatingButtonView from '../../components/buttons/floatingButtonView'
 import Button from '../../components/buttons/singleButton'
+import {OpacityLinks} from '../../components/links'
 import {ShareIcon, CopyIcon, EditIcon, TrashIcon} from '../../vectors/generalIcons'
 
 import {ListSchemas} from '../../realm-storage/schemas'
@@ -20,6 +21,8 @@ import {dWidth, realmStorePath, currencies,featureImages} from '../../includes/v
 class ListDetails extends Component {
 
     realm;
+    storedLists;
+    storedListDetails;
 
     state={
         showButtonLabels: false,
@@ -29,6 +32,7 @@ class ListDetails extends Component {
         isSynced: true,
         isSyncing: false,
         isStarred: false,
+        showPrice: false,
 
         listDetails: {
             _id: '',
@@ -97,11 +101,18 @@ class ListDetails extends Component {
 
     componentWillUnmount(){
         this.backHandler.remove()
+
+        if(this.realm !== null && typeof this.realm !== 'undefined' && this.realm !== ""){
+            this.realm.isInTransaction ? this.realm.cancelTransaction() : null;
+            this.realm.isClosed ? null : this.realm.close();
+
+            this.storedLists ? this.storedLists.removeAllListeners() : null;
+        }
     }
 
     getListDetails = async() => {
         try {
-            let realm = await Realm.open({
+            this.realm = await Realm.open({
                 path: realmStorePath,
                 schema: [
                     ListSchemas.listSchema,
@@ -112,13 +123,18 @@ class ListDetails extends Component {
                 ]
             });
             
-            let lists = realm.objects('Lists');
+            this.storedLists = this.realm.objects('list');
             
-            let listDetails = lists.filtered(`_id == '${this.props.listId}'`)[0]
+            this.storedListDetails = this.storedLists.filtered(`_id == '${this.props.listId}'`)[0];
 
-            lists.addListener((tasks,changes)=>{
+            this.realm.write(() => {
+                this.storedListDetails.lastViewed = new Date();
+            });
+
+            this.storedLists.addListener((tasks,changes)=>{
                 // Update UI in response to modified objects
                 // `newModifications` contains object indexes from after they were modified
+                console.log(changes);
                 changes.newModifications.forEach((index) => {
                     let modifiedTask = tasks[index];
                     console.log(`modifiedTask: ${JSON.stringify(modifiedTask, null, 2)}`);
@@ -127,11 +143,33 @@ class ListDetails extends Component {
             });
 
             this.setState({
-                listDetails
-            })
+                listDetails: this.storedListDetails
+            });
         } catch (error) {
             
         }
+    }
+
+    updateListItem = (itemId, categoryId, itemKey, value) => {
+        let itemIndex = this.state.listDetails.items.findIndex((item) => (item.id == itemId && item.category == categoryId))
+        let itemsArray = [...this.state.listDetails.items]
+        itemsArray[itemIndex] = {
+            ...itemsArray[itemIndex],
+            [itemKey]: value
+        }
+
+        this.realm.write(() => {
+            this.storedListDetails.items = itemsArray;
+            this.storedListDetails.dateModified = new Date();
+            this.storedListDetails.lastActivityLog = `Updated list item <${itemsArray[itemIndex].id}> - '${itemsArray[itemIndex].title}'`;
+        });
+        
+        this.setState(prevState => ({
+            listDetails: {
+                ...prevState.listDetails,
+                items: itemsArray
+            }
+        }))
     }
 
     render() {
@@ -192,6 +230,42 @@ class ListDetails extends Component {
                 </SyncModal>) : null }
 
                 <ScrollView style={globalStyles.scrollView} contentContainerStyle={globalStyles.scrollViewContainer} showsVerticalScrollIndicator={false} snapToEnd>
+                    {this.state.listDetails.categories.map((category, i) => {
+                        return (
+                            <View key={i}>
+                                <View style={globalStyles.categoryWrapper}>
+                                    <Text style={[globalStyles.subtext, {color: activeColorScheme.subtext_1}]}>{category.categoryName}</Text>
+                                    {i == 1 ? <OpacityLinks onPress={() => this.setState(prevState => ({showPrice: !prevState.showPrice}))}><View><Text style={[styles.priceToggle, {color:this.props.theme.primaryColor}]}> {this.state.showPrice ? 'Show Units' : 'Show Prices'}</Text></View></OpacityLinks> : null}
+                                </View>
+
+                                {
+                                    this.state.listDetails.items.map((item, key) => {
+                                        return (
+                                            <OpacityLinks onPress={() => this.updateListItem(item.id, category.categoryId, "status", item.status == 'active' ? 'inactive' : 'active')}>
+                                                <View key={key} style={[globalStyles.listItem, {borderBottomColor: activeColorScheme.listBorder}]}>
+                                                    <View style={globalStyles.listItemLeft}>
+                                                        <View style={{marginRight: 10}}>
+                                                            <CheckedIcon checkedStatus={item.status == 'active'} theme={this.props.theme} />
+                                                        </View>
+                                                        <View style={globalStyles.listItemTitleWrapper}><Text style={[globalStyles.listItemTitle, item.status == 'active' ? {color: activeColorScheme.textPrimary} : globalStyles.listItemTitleCrossed]}>{item.title}</Text></View>
+                                                    </View>
+                                                    <View style={globalStyles.listItemRight}>
+                                                        <Text style={globalStyles.listItemSubtext}>
+                                                            {   
+                                                                this.state.showPrice 
+                                                                ? `${this.state.listDetails.currency.symbol} ${item.price}` 
+                                                                : `${item.units} ${item.unitSymbol.symbol}`
+                                                            }
+                                                        </Text>
+                                                    </View>
+                                                </View>
+                                            </OpacityLinks>
+                                        )
+                                    })
+                                }
+                            </View>
+                        )
+                    })}
                     <View style={globalStyles.categoryWrapper}>
                         <Text style={[globalStyles.subtext, {color: activeColorScheme.subtext_1}]}>Dairy</Text>
                         <View><Text style={[styles.priceToggle, {color:this.props.theme.primaryColor}]}> Show Prices</Text></View>
@@ -335,7 +409,20 @@ class ListDetails extends Component {
                         {text: 'Share', icon: ShareIcon, onPress:()=>{alert('pie')}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isSynced, disabledPressAction: ()=>{this.setState({syncModal: true})}},
                         {text: 'Copy', icon: CopyIcon, onPress:()=>{alert('pie')}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isSynced, disabledPressAction: ()=>{this.setState({syncModal: true})}},
                         {text: 'Edit', icon:  EditIcon, onPress:()=>{alert('pie')}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isOwner, disabledPressAction: ()=>{/* Do Nothing */}},
-                        {text: 'Delete', icon: TrashIcon, onPress:()=>{alert('pie')}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isOwner, disabledPressAction: ()=>{/* Do Nothing */}}
+                        {
+                            text: 'Delete', icon: TrashIcon, onPress:()=>{
+                                this.realm.write(() => {
+                                    // Delete the task from the realm.
+                                    this.realm.delete(this.storedListDetails)
+                                    // Discard the reference.
+                                    this.storedListDetails = null
+                                });
+
+                                this.realm.close();
+
+                                Navigation.pop(this.props.componentId)
+                            }, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isOwner, disabledPressAction: ()=>{/* Do Nothing */}
+                        }
                     ]
                     : [
                         {text: 'Share', icon: ShareIcon, onPress:()=>{alert('pie')}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isSynced, disabledPressAction: ()=>{this.setState({syncModal: true})}},
