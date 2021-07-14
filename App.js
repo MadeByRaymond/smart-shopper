@@ -10,8 +10,9 @@ import InAppUpdates from 'sp-react-native-in-app-updates';
 import ProviderConfig from './src/store/providerConfig';
 import ReduxStore from './src/store/storeConfig';
 import {setColorScheme, setTheme} from './src/store/actions';
-import {asyncStores} from './src/includes/variables';
+import {asyncStores, currencies} from './src/includes/variables';
 import {theme} from './src/components/uiComponents';
+import {app as realmApp} from './src/realm-storage/realm';
 
 // SPLASH SCREENS IMPORTS
 // import Splash from "./src/screens/splashScreen/splashScreen";
@@ -69,28 +70,73 @@ Navigation.registerComponent('com.mbr.smartshopper.screen.settings', () => (prop
 //   }
 // });
 
-// Add Appearance Change Listener 
-Appearance.addChangeListener(()=>{
-  AsyncStorage.getItem(asyncStores.colorScheme).then((result) => {
-    result == 'system' ? ReduxStore.dispatch(setColorScheme(result)) : null
-  }).catch((e) => {/* Do Nothing */})
-})
+// // Add Appearance Change Listener 
+// Appearance.addChangeListener(()=>{
+//   AsyncStorage.getItem(asyncStores.colorScheme).then((result) => {
+//     result == 'system' ? ReduxStore.dispatch(setColorScheme(result)) : null
+//   }).catch((e) => {/* Do Nothing */})
+// })
 
-AsyncStorage.getItem(asyncStores.colorScheme).then((result) => {
-  ReduxStore.dispatch(setColorScheme(result))
-}).catch((e) => {
-  AsyncStorage.setItem(asyncStores.colorScheme, 'light');
-  ReduxStore.dispatch(setColorScheme('light'))
-})
+// AsyncStorage.getItem(asyncStores.colorScheme).then((result) => {
+//   ReduxStore.dispatch(setColorScheme(result))
+// }).catch((e) => {
+//   AsyncStorage.setItem(asyncStores.colorScheme, 'light');
+//   ReduxStore.dispatch(setColorScheme('light'))
+// })
 
 
-// Set App Active Theme 
-AsyncStorage.getItem(asyncStores.theme).then((result) => {
-  ReduxStore.dispatch(setTheme(result))
-}).catch((e) => {
-  AsyncStorage.setItem(asyncStores.theme, Object.keys(theme)[0]);
-  ReduxStore.dispatch(setTheme(Object.keys(theme)[0]))
-})
+// // Set App Active Theme 
+// AsyncStorage.getItem(asyncStores.theme).then((result) => {
+//   ReduxStore.dispatch(setTheme(result))
+// }).catch((e) => {
+//   AsyncStorage.setItem(asyncStores.theme, Object.keys(theme)[0]);
+//   ReduxStore.dispatch(setTheme(Object.keys(theme)[0]))
+// })
+
+
+let startupFunctions = async() => {
+  // Add Appearance Change Listener 
+  Appearance.addChangeListener(()=>{
+    AsyncStorage.getItem(asyncStores.colorScheme).then((result) => {
+      result == 'system' ? ReduxStore.dispatch(setColorScheme(result)) : null
+    }).catch((e) => {/* Do Nothing */})
+  })
+
+  try {
+    let appColorScheme = await AsyncStorage.getItem(asyncStores.colorScheme);
+    if(typeof appColorScheme == 'undefined' || appColorScheme == null || appColorScheme.trim() == ''){
+      throw 'Default App Color Scheme Not Set'
+    }
+    await ReduxStore.dispatch(setColorScheme(appColorScheme))
+  } catch (error) {
+    await AsyncStorage.setItem(asyncStores.colorScheme, 'light');
+    await ReduxStore.dispatch(setColorScheme('light'))
+  }
+
+  // Set App Active Theme 
+  try {
+    let appTheme = await AsyncStorage.getItem(asyncStores.theme)
+    if(typeof appTheme == 'undefined' || appTheme == null || appTheme.trim() == ''){
+      throw 'Default App Theme Not Set'
+    }
+  } catch (error) {
+    await AsyncStorage.setItem(asyncStores.theme, Object.keys(theme)[0]);
+    await ReduxStore.dispatch(setTheme(Object.keys(theme)[0]))
+  }
+
+  // Set App Active Currency 
+  try {
+    let appCurrency = await AsyncStorage.getItem(asyncStores.currency);
+    if(typeof appCurrency == 'undefined' || appCurrency == null || appCurrency.trim() == ''){
+      throw 'Default App Currency Not Set'
+    }
+  } catch (error) {
+    await AsyncStorage.setItem(asyncStores.currency, JSON.stringify({
+      id: currencies[0].id,
+      symbol: currencies[0].symbol
+    }));
+  }
+}
 
 
 // APP ROOTS 
@@ -194,6 +240,12 @@ export const getRoot = async () =>{
 
 
 Navigation.events().registerAppLaunchedListener(async() => {
+  try {
+    await startupFunctions();
+    realmApp.logIn(Realm.Credentials.anonymous());
+  } catch (error) {
+    console.log(e);
+  }
   //  Navigation.setRoot(await isLoggedIn() ? mainRoot : loginRoot);
   //  Navigation.setRoot(await getRoot());
   Navigation.setRoot(mainRoot);

@@ -6,14 +6,25 @@ import {CaretIcon, StarredIcon} from '../../vectors/generalIcons'
 
 import {OpacityLinks} from '../links'
 import {navigateToScreen} from '../../includes/functions'
+import {featureImages} from '../../includes/variables'
 
 const shoppingLists = (props) => {
     return (
-        <OpacityLinks onPress={()=> navigateToScreen(props.newScreenProps.componentId,'com.mbr.smartshopper.screen.listDetails',{listId: props.listId})}>
+        <OpacityLinks onPress={() => navigateToScreen(
+            props.newScreenProps.componentId,
+            'com.mbr.smartshopper.screen.listDetails',
+            {
+                listId: props.listId,
+                isSynced: props.isSynced,
+                isOwner: props.isOwner,
+                isLoading: props.loadOnView,
+                refreshView: props.refreshView
+            }
+        )}>
             <View style={styles.itemContainer}>
                 <View style={styles.left}>
                     <View>
-                        <Image style={styles.image} source={require('../../assets/img/005-popsicle.png')} />
+                        <Image style={styles.image} source={{uri: featureImages.find(item => item.id == props.featureImage).uri}} />
                     </View>
                     <View>
                         <View><Text style={[styles.title, {color: props.colors.textPrimary}]}>{props.listName}</Text></View>

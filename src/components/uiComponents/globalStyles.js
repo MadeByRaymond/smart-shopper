@@ -88,6 +88,11 @@ export const globalStyles = StyleSheet.create({
 
 
     // Modal Styles
+    globalModalLayout:{
+        margin: 0, 
+        justifyContent: 'flex-end', 
+        flex:1
+    },
     modalBgWrapper:{
         flex: 1, 
         backgroundColor: 'transparent',

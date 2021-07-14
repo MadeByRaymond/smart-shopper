@@ -15,7 +15,7 @@ import Button from '../../components/buttons/singleButton'
 import {setTheme, setColorScheme} from '../../store/actions'
 
 // Includes 
-import {updateStatusBarAppearance} from '../../includes/functions';
+import {updateStatusBarAppearance, onShare} from '../../includes/functions';
 import {currencies, customItemId, displayModes, asyncStores, charities, dHeight} from '../../includes/variables';
 
 export class Settings extends Component {
@@ -123,7 +123,7 @@ export class Settings extends Component {
                     closeFunction = {()=>{this.setState({showThemeModal: false})}}
                     activeState={this.state.showThemeModal}
                     colorScheme = {activeColorScheme}
-                    activeThemeName = {this.props.colorScheme}
+                    activeThemeName = {this.props.themeColorName}
                     setTheme = {this.props.setTheme}
                 />
 
@@ -171,35 +171,33 @@ export class Settings extends Component {
                     onBackButtonPress= {()=> this.setState({charityModal: false})}
                     onBackdropPress= {()=> this.setState({charityModal: false})}
                     onSwipeComplete= {()=> this.setState({charityModal: false})}
-                    style={{margin: 0}}
+                    style={globalStyles.globalModalLayout}
                 >
-                    <View style={globalStyles.modalBgWrapper}>
-                        <View style={[globalStyles.modalBg,{backgroundColor: activeColorScheme.modalBackground,}]}>
+                    <View style={[globalStyles.modalBg,{backgroundColor: activeColorScheme.modalBackground,}]}>
+                        <View>
                             <View>
-                                <View>
-                                    <Image 
-                                        source={{uri: this.state.charityOrg.orgLogo}}
-                                        style={styles.charityModalLogo}
-                                    />
-                                </View>
-                            </View>
-                            <View><Text style={[styles.charityModalTitle, {color: activeColorScheme.textPrimary}]}>{this.state.charityOrg.fullName} ({this.state.charityOrg.displayName})</Text></View>
-                            <View style={{maxHeight: dHeight - 325 - 48 - 85, marginBottom: 25,}}><ScrollView >
-                                <View onStartShouldSetResponder={() => true}><Text style={[styles.charityModalContentText, {color: activeColorScheme.textPrimary, paddingBottom:0}]}>{this.state.charityOrg.description}</Text></View>
-                            </ScrollView></View>
-                            <OpacityLinks onPress={()=> {Linking.openURL(this.state.charityOrg.organizationSite).catch((e)=>{})}}><Text style={[styles.charityModalContentText, {color: this.props.theme.primaryColor}]}>{'>>'} Visit Charity / Organization Site</Text></OpacityLinks>
-                            
-                            <View style={styles.charityModalBtnWrapper}>
-                                <Button 
-                                    content={{text:'Donate / Support Here'}} 
-                                    theme={this.props.theme} 
-                                    colors={activeColorScheme} 
-                                    colorScheme={this.props.colorScheme}
-                                    onPress= {()=>{
-                                        Linking.openURL(this.state.charityOrg.donationSite).catch((e)=>{})
-                                    }}
+                                <Image 
+                                    source={{uri: this.state.charityOrg.orgLogo}}
+                                    style={styles.charityModalLogo}
                                 />
                             </View>
+                        </View>
+                        <View><Text style={[styles.charityModalTitle, {color: activeColorScheme.textPrimary}]}>{this.state.charityOrg.fullName} ({this.state.charityOrg.displayName})</Text></View>
+                        <View style={{maxHeight: dHeight - 325 - 48 - 85, marginBottom: 25,}}><ScrollView >
+                            <View onStartShouldSetResponder={() => true}><Text style={[styles.charityModalContentText, {color: activeColorScheme.textPrimary, paddingBottom:0}]}>{this.state.charityOrg.description}</Text></View>
+                        </ScrollView></View>
+                        <OpacityLinks onPress={()=> {Linking.openURL(this.state.charityOrg.organizationSite).catch((e)=>{})}}><Text style={[styles.charityModalContentText, {color: this.props.theme.primaryColor}]}>{'>>'} Visit Charity / Organization Site</Text></OpacityLinks>
+                        
+                        <View style={styles.charityModalBtnWrapper}>
+                            <Button 
+                                content={{text:'Donate / Support Here'}} 
+                                theme={this.props.theme} 
+                                colors={activeColorScheme} 
+                                colorScheme={this.props.colorScheme}
+                                onPress= {()=>{
+                                    Linking.openURL(this.state.charityOrg.donationSite).catch((e)=>{})
+                                }}
+                            />
                         </View>
                     </View>
                 </CharityModal>
@@ -252,6 +250,32 @@ export class Settings extends Component {
                         <Text style={[globalStyles.subtext, {color: activeColorScheme.subtext_1}]}>Donations & Support</Text>
                     </View>
 
+                    <OpacityLinks onPress={()=>{onShare('Invite a friend via...', `Hey, 
+
+Check out SmartShopper. I use it to create and keep track of my shopping list. It's awesome!!!
+
+Get it now on android free.
+https://madebyraymond.herokuapp.com/?redirecttoapp=smartshopperapp
+                                `, 'Check out the SmartShopper app.')}}>
+                        <View style={[globalStyles.listItem, {borderBottomColor: activeColorScheme.listBorder}]}>
+                            <View style={globalStyles.listItemLeft}>
+                                <View style={globalStyles.listItemTitleWrapper}><Text style={[globalStyles.listItemTitle, {color: activeColorScheme.textPrimary}]}>Invite a friend</Text></View>
+                            </View>
+                            <View style={globalStyles.listItemRight}>
+                                <Text style={globalStyles.listItemSubtext}>Share via ...</Text>
+                            </View>
+                        </View>
+                    </OpacityLinks>
+                    <OpacityLinks onPress={()=>{Linking.openURL('mailto:MadeByRaymond@gmail.com')}}>
+                        <View style={[globalStyles.listItem, {borderBottomColor: activeColorScheme.listBorder}]}>
+                            <View style={globalStyles.listItemLeft}>
+                                <View style={globalStyles.listItemTitleWrapper}><Text style={[globalStyles.listItemTitle, {color: activeColorScheme.textPrimary}]}>Contact Us</Text></View>
+                            </View>
+                            <View style={globalStyles.listItemRight}>
+                                <Text style={globalStyles.listItemSubtext}>via E-Mail</Text>
+                            </View>
+                        </View>
+                    </OpacityLinks>
                     <OpacityLinks onPress={()=>{Linking.openURL('https://madebyraymond.herokuapp.com/buymecoffee')}}>
                         <View style={[globalStyles.listItem, {borderBottomColor: activeColorScheme.listBorder}]}>
                             <View style={globalStyles.listItemLeft}>
@@ -272,21 +296,12 @@ export class Settings extends Component {
                             </View>
                         </View>
                     </OpacityLinks>
-                    <OpacityLinks onPress={()=>{Linking.openURL('mailto:MadeByRaymond@gmail.com')}}>
-                        <View style={[globalStyles.listItem, {borderBottomColor: activeColorScheme.listBorder}]}>
-                            <View style={globalStyles.listItemLeft}>
-                                <View style={globalStyles.listItemTitleWrapper}><Text style={[globalStyles.listItemTitle, {color: activeColorScheme.textPrimary}]}>Contact Us</Text></View>
-                            </View>
-                            <View style={globalStyles.listItemRight}>
-                                <Text style={globalStyles.listItemSubtext}>via E-Mail</Text>
-                            </View>
-                        </View>
-                    </OpacityLinks>
-
             
 
                     <View style={styles.creditIconWrapper}>
-                        <CreditIcon colorScheme={this.props.colorScheme} />
+                        <TouchableWithoutFeedback onPress={()=>{Linking.openURL('https://madebyraymond.herokuapp.com/')}}>
+                            <CreditIcon colorScheme={this.props.colorScheme} />
+                        </TouchableWithoutFeedback>
                     </View>
                 </ScrollView>
 
@@ -322,7 +337,7 @@ const styles = StyleSheet.create({
 
     creditIconWrapper:{
         flex: 1, 
-        minHeight: 150, 
+        minHeight: 110, 
         justifyContent: 'flex-end', 
         alignItems: 'center', 
         paddingBottom: 30

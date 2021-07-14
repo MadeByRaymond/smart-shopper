@@ -6,6 +6,7 @@ import FeatureImagesModal from 'react-native-modal';
 import Realm from "realm";
 import {ObjectId} from 'bson';
 import {getUniqueId} from 'react-native-device-info';
+import { Navigation } from 'react-native-navigation';
 
 import Header from '../../components/header';
 import {globalStyles, colorScheme, theme} from '../../components/uiComponents'
@@ -20,7 +21,6 @@ import {ListSchemas} from '../../realm-storage/schemas'
 // Includes 
 import {updateStatusBarAppearance} from '../../includes/functions';
 import {currencies, unitSymbols, customItemId, asyncStores, featureImages, realmStorePath, dHeight, dWidth} from '../../includes/variables';
-import { Navigation } from 'react-native-navigation';
 
 export class ListCreation extends Component {
 
@@ -45,7 +45,7 @@ export class ListCreation extends Component {
             id: currencies[0].id,
             symbol: currencies[0].symbol
         },
-        listTitle: 'New List Title',
+        listTitle: 'Title',
         listItemCategories:[
             {
                 categoryId: 'category-1',
@@ -71,12 +71,15 @@ export class ListCreation extends Component {
     componentDidMount(){ 
         updateStatusBarAppearance(this.props);
 
-        AsyncStorage.getItem(asyncStores.currency).then(val => this.setState({
-            currency: JSON.parse(val)
-        })).catch((e)=>this.setState({
-            id: currencies[0].id,
-            symbol: currencies[0].symbol
-        }))
+        AsyncStorage.getItem(asyncStores.currency).then(val => {
+            this.setState({
+                currency: JSON.parse(val)
+            })
+        }).catch((e)=>{
+            // console.log('err-->', e);
+        })
+
+        this.props.showAsEdit ? this.getItemsFromRealm() : null;
     }
 
     componentDidUpdate(prevProps){
@@ -110,32 +113,75 @@ export class ListCreation extends Component {
             ]
         }).then(realm => {
             realm.write(() => {
-                this.realm.create("Lists", {
+                realm.create("list", {
                     _id: new ObjectId().toHexString(),
                     _partition : 'public',
                     synced: false,
-                    name: this.state.listTitle,
+                    name: this.state.listTitle.trim(),
                     items: this.state.listItems,
                     categories: this.state.listItemCategories,
                     currency: this.state.currency,
                     featureImage: this.state.activeFeatureImage,
                     code: '',
                     status: "active",
-                    ownerId: getUniqueId,
+                    ownerId: getUniqueId(),
                     dateCreated: new Date(),
                     dateModified: new Date(),
                     lastViewed: new Date(),
                     lastActivityLog: 'created new list'
                 })
+                
             })
 
             realm.close();
+            this.props.refreshView();
+            Navigation.pop(this.props.componentId);
+        }).catch(e => {
+            console.log(e);
+        })
+    }
 
-            Navigation.pop(this.props.componentId)
+    updateListDetails = () => {
+        Realm.open({
+            path: realmStorePath,
+            schema: [
+                ListSchemas.listSchema,
+                ListSchemas.listItemsSchema,
+                ListSchemas.unitSymbolSchema,
+                ListSchemas.listItemsCategoriesSchema,
+                ListSchemas.currencySchema
+            ]
+        }).then(realm => {
+            realm.write(() => {
+                let storedListDetails = realm.objects('list').filtered(`_id == '${this.props.listId}'`)[0];
+                storedListDetails.name = this.state.listTitle;
+                storedListDetails.featureImage = this.state.activeFeatureImage;
+                storedListDetails.currency = this.state.currency;
+                storedListDetails.categories = this.state.listItemCategories;
+                storedListDetails.items = this.state.listItems;
+                storedListDetails.dateModified = new Date();
+                storedListDetails.lastActivityLog = `Updated List Details on ${new Date()}`;
+            })
+
+            realm.close();
+            this.props.refreshView();
+            Navigation.pop(this.props.componentId);
+        }).catch(e => {
+            console.log(e);
         })
     }
 
     // removeListItem = ()
+
+    trimInputVal = (val='') => {
+        let finalValue = val;
+        if(val.trim() == ''){
+            finalValue = val.trim()
+        }else if(val.endsWith(' ')){
+            finalValue = val.trim() + ' ';
+        }
+        return finalValue;
+    }
 
     renderItems = (activeColorScheme) =>{
         // let fff = this.state.listItemCategories.for
@@ -149,8 +195,9 @@ export class ListCreation extends Component {
                                 <TextInput
                                     value= {item.title}
                                     maxLength= {20}
-                                    onChangeText= {(val) => this.updateListItem(item.id, item.category, 'title', val)}
-
+                                    onChangeText= {(val) => this.updateListItem(item.id, item.category, 'title', this.trimInputVal(val))}
+                                    placeholder={'Enter Item Title'}
+                                    placeholderTextColor={activeColorScheme.inputPlaceholder}
                                     style={[styles.listItemTitle, {color: activeColorScheme.textPrimary}]}
                                 />
                             </View>
@@ -160,7 +207,22 @@ export class ListCreation extends Component {
                                     value= {item.price}
                                     maxLength={12}
                                     keyboardType= {'numeric'}
-                                    onChangeText= {(val) => this.updateListItem(item.id, item.category, 'price', val)}
+                                    onChangeText= {(val) => {
+                                        let finalValue = val;
+                                        if(val.trim() != '0.' && val.trim() != '0-' && item.price.trim() == '0'){
+                                            finalValue = finalValue.substring(1)
+                                        }
+                                        if((val.trim().endsWith('-')) || (val.trim().endsWith('.') && ((val.split(".").length - 1) > 1))){
+                                            finalValue = finalValue.slice(0, -1)
+                                        }
+                                        if(finalValue.trim() == ''){
+                                            finalValue = '0'
+                                        }
+                                        // if((val.split(".").length - 1) > 1){
+                                        //     // console.log();
+                                        // }
+                                        this.updateListItem(item.id, item.category, 'price', finalValue.trim())
+                                    }}
 
                                     style={[styles.listItemPrice, {color: activeColorScheme.subtext_3, width:dWidth - 16 - 16 - 45 - 45 - 48 - 10 - 15 - 55}]}
                                 />
@@ -173,7 +235,7 @@ export class ListCreation extends Component {
                                         value={item.units}
                                         maxLength= {4}
                                         keyboardType= {'numeric'}
-                                        onChangeText= {(val) => this.updateListItem(item.id, item.category, 'units', val)}
+                                        onChangeText= {(val) => this.updateListItem(item.id, item.category, 'units', val.trim())}
 
                                         style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
                                     />
@@ -241,13 +303,16 @@ export class ListCreation extends Component {
                                 let categoriesArray = [...this.state.listItemCategories]
                                 categoriesArray[categoryIndex] = {
                                     ...categoriesArray[categoryIndex],
-                                    categoryName: val
+                                    categoryName: this.trimInputVal(val)
                                 }
 
                                 this.setState({
                                     listItemCategories: categoriesArray
                                 })
                             }}
+                            placeholder={'Enter Category Name'}
+                            placeholderTextColor={activeColorScheme.inputPlaceholder}
+                            selectTextOnFocus
 
                             style={[styles.listCategoryInput, {color: activeColorScheme.subtext_1}]}
                         />
@@ -260,7 +325,7 @@ export class ListCreation extends Component {
                             let listItems = [...prevState.listItems, {
                                 id: `item-${prevState.itemCount + 1}`,
                                 category: category.categoryId,
-                                title: 'Item Title',
+                                title: '',
                                 price: '0',
                                 units: '1',
                                 unitSymbol: unitSymbols[0],
@@ -289,7 +354,7 @@ export class ListCreation extends Component {
                             let listItems = [...prevState.listItems, {
                                 id: `item-${prevState.itemCount + 1}`,
                                 category: `category-${prevState.categoryCount + 1}`,
-                                title: 'Item Title',
+                                title: '',
                                 price: '0',
                                 units: '1',
                                 unitSymbol: unitSymbols[0],
@@ -321,138 +386,138 @@ export class ListCreation extends Component {
                 </View>
             );
         })
-        for (const category of this.state.listItemCategories) {
-            for (const item of this.state.listItems) {
-                if(item.category.trim() == category.categoryId.trim()){
-                    fff = fff + (<View>
-                        <View style={styles.categoryWrapper}>
-                            <TextInput 
-                                value={'Dairy'}
-                                maxLength={30}
+        // for (const category of this.state.listItemCategories) {
+        //     for (const item of this.state.listItems) {
+        //         if(item.category.trim() == category.categoryId.trim()){
+        //             fff = fff + (<View>
+        //                 <View style={styles.categoryWrapper}>
+        //                     <TextInput 
+        //                         value={'Dairy'}
+        //                         maxLength={30}
     
-                                style={[styles.listCategoryInput, {color: activeColorScheme.subtext_1}]}
-                            />
-                        </View>
-                        <View style={styles.listItemsWrapper}>
-                            <View style={styles.listItemContainer}>
-                                <View style={styles.listItemRight}>
-                                    <View>
-                                        <TextInput
-                                            value= {'Milk'}
-                                            maxLength= {20}
+        //                         style={[styles.listCategoryInput, {color: activeColorScheme.subtext_1}]}
+        //                     />
+        //                 </View>
+        //                 <View style={styles.listItemsWrapper}>
+        //                     <View style={styles.listItemContainer}>
+        //                         <View style={styles.listItemRight}>
+        //                             <View>
+        //                                 <TextInput
+        //                                     value= {'Milk'}
+        //                                     maxLength= {20}
     
-                                            style={[styles.listItemTitle, {color: activeColorScheme.textPrimary}]}
-                                        />
-                                    </View>
-                                    <View style={styles.listItemPriceWrapper}>
-                                        <Text style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}>{this.state.currency.symbol}</Text>
-                                        <TextInput
-                                            value= {'20'}
-                                            maxLength={12}
-                                            keyboardType= {'numeric'}
+        //                                     style={[styles.listItemTitle, {color: activeColorScheme.textPrimary}]}
+        //                                 />
+        //                             </View>
+        //                             <View style={styles.listItemPriceWrapper}>
+        //                                 <Text style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}>{this.state.currency.symbol}</Text>
+        //                                 <TextInput
+        //                                     value= {'20'}
+        //                                     maxLength={12}
+        //                                     keyboardType= {'numeric'}
                                             
     
-                                            style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}
-                                        />
-                                    </View>
-                                </View>
-                                <View style={styles.listItemLeft}>
-                                    <View style={styles.listItemUnitsWrapper}>
-                                        <View style={styles.listItemUnitsBorder}>
-                                            <TextInput 
-                                                value={'29'}
-                                                maxLength= {4}
-                                                keyboardType= {'numeric'}
+        //                                     style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}
+        //                                 />
+        //                             </View>
+        //                         </View>
+        //                         <View style={styles.listItemLeft}>
+        //                             <View style={styles.listItemUnitsWrapper}>
+        //                                 <View style={styles.listItemUnitsBorder}>
+        //                                     <TextInput 
+        //                                         value={'29'}
+        //                                         maxLength= {4}
+        //                                         keyboardType= {'numeric'}
     
-                                                style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
-                                            />
-                                        </View>
-                                        <View>
-                                            <Text
-                                                style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
-                                            >gal</Text>
-                                        </View>
-                                    </View>
-                                    <View style={styles.trashButtonWrapper}>
-                                        <TouchableOSSpecific onPress={()=> {/*alert('ff')*/}}>
-                                            <View style={[styles.trashButton, {backgroundColor: this.props.theme.primaryColor}]}>
-                                                <TrashIcon 
-                                                    height={20}
-                                                />
-                                            </View>    
-                                        </TouchableOSSpecific>
-                                    </View>
-                                </View>
-                            </View>
-                            <View style={styles.listItemContainer}>
-                                <View style={styles.listItemRight}>
-                                    <View>
-                                        <TextInput
-                                            value= {'Milk'}
-                                            maxLength= {20}
+        //                                         style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
+        //                                     />
+        //                                 </View>
+        //                                 <View>
+        //                                     <Text
+        //                                         style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
+        //                                     >gal</Text>
+        //                                 </View>
+        //                             </View>
+        //                             <View style={styles.trashButtonWrapper}>
+        //                                 <TouchableOSSpecific onPress={()=> {/*alert('ff')*/}}>
+        //                                     <View style={[styles.trashButton, {backgroundColor: this.props.theme.primaryColor}]}>
+        //                                         <TrashIcon 
+        //                                             height={20}
+        //                                         />
+        //                                     </View>    
+        //                                 </TouchableOSSpecific>
+        //                             </View>
+        //                         </View>
+        //                     </View>
+        //                     <View style={styles.listItemContainer}>
+        //                         <View style={styles.listItemRight}>
+        //                             <View>
+        //                                 <TextInput
+        //                                     value= {'Milk'}
+        //                                     maxLength= {20}
     
-                                            style={[styles.listItemTitle, {color: activeColorScheme.textPrimary}]}
-                                        />
-                                    </View>
-                                    <View style={styles.listItemPriceWrapper}>
-                                        <Text style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}>{this.state.currency.symbol}</Text>
-                                        <TextInput
-                                            value= {'20'}
-                                            maxLength={12}
-                                            keyboardType= {'numeric'}
+        //                                     style={[styles.listItemTitle, {color: activeColorScheme.textPrimary}]}
+        //                                 />
+        //                             </View>
+        //                             <View style={styles.listItemPriceWrapper}>
+        //                                 <Text style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}>{this.state.currency.symbol}</Text>
+        //                                 <TextInput
+        //                                     value= {'20'}
+        //                                     maxLength={12}
+        //                                     keyboardType= {'numeric'}
                                             
     
-                                            style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}
-                                        />
-                                    </View>
-                                </View>
-                                <View style={styles.listItemLeft}>
-                                    <View style={styles.listItemUnitsWrapper}>
-                                        <View style={styles.listItemUnitsBorder}>
-                                            <TextInput 
-                                                value={'29'}
-                                                maxLength= {4}
-                                                keyboardType= {'numeric'}
+        //                                     style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}
+        //                                 />
+        //                             </View>
+        //                         </View>
+        //                         <View style={styles.listItemLeft}>
+        //                             <View style={styles.listItemUnitsWrapper}>
+        //                                 <View style={styles.listItemUnitsBorder}>
+        //                                     <TextInput 
+        //                                         value={'29'}
+        //                                         maxLength= {4}
+        //                                         keyboardType= {'numeric'}
     
-                                                style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
-                                            />
-                                        </View>
-                                        <View>
-                                            <Text
-                                                style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
-                                            >gal</Text>
-                                        </View>
-                                    </View>
-                                    <View style={styles.trashButtonWrapper}>
-                                        <TouchableOSSpecific onPress={()=> {/*alert('ff')*/}}>
-                                            <View style={[styles.trashButton, {backgroundColor: this.props.theme.primaryColor}]}>
-                                                <TrashIcon 
-                                                    height={20}
-                                                />
-                                            </View>    
-                                        </TouchableOSSpecific>
-                                    </View>
-                                </View>
-                            </View>
-                        </View>
+        //                                         style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
+        //                                     />
+        //                                 </View>
+        //                                 <View>
+        //                                     <Text
+        //                                         style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
+        //                                     >gal</Text>
+        //                                 </View>
+        //                             </View>
+        //                             <View style={styles.trashButtonWrapper}>
+        //                                 <TouchableOSSpecific onPress={()=> {/*alert('ff')*/}}>
+        //                                     <View style={[styles.trashButton, {backgroundColor: this.props.theme.primaryColor}]}>
+        //                                         <TrashIcon 
+        //                                             height={20}
+        //                                         />
+        //                                     </View>    
+        //                                 </TouchableOSSpecific>
+        //                             </View>
+        //                         </View>
+        //                     </View>
+        //                 </View>
                         
-                        <View>
-                            <OpacityLinks activeOpacity={0.95}>
-                                <View style={[styles.addButton, {borderColor: this.props.theme.primaryColor, backgroundColor: this.props.colorScheme == 'dark' ? this.props.theme.secondaryColor : activeColorScheme.background}]}>
-                                    <View style={styles.addButtonIcon}>
-                                        <AddIcon 
-                                            theme={this.props.theme}
-                                        />
-                                    </View>
-                                    <View><Text style={[styles.addButtonText, {color: this.props.theme.primaryColor}]}>Add Item</Text></View>
-                                </View>
-                            </OpacityLinks>
-                        </View>
-                    </View>)
-                }
+        //                 <View>
+        //                     <OpacityLinks activeOpacity={0.95}>
+        //                         <View style={[styles.addButton, {borderColor: this.props.theme.primaryColor, backgroundColor: this.props.colorScheme == 'dark' ? this.props.theme.secondaryColor : activeColorScheme.background}]}>
+        //                             <View style={styles.addButtonIcon}>
+        //                                 <AddIcon 
+        //                                     theme={this.props.theme}
+        //                                 />
+        //                             </View>
+        //                             <View><Text style={[styles.addButtonText, {color: this.props.theme.primaryColor}]}>Add Item</Text></View>
+        //                         </View>
+        //                     </OpacityLinks>
+        //                 </View>
+        //             </View>)
+        //         }
                 
-            }
-        }
+        //     }
+        // }
 
         // console.log(fff);
         // return fff
@@ -516,44 +581,68 @@ export class ListCreation extends Component {
                 onBackButtonPress= {()=> this.setState({featureImagesModal: false})}
                 onBackdropPress= {()=> this.setState({featureImagesModal: false})}
                 onSwipeComplete= {()=> this.setState({featureImagesModal: false})}
-                style={{margin: 0}}
+                style={globalStyles.globalModalLayout}
             >
-                <View style={globalStyles.modalBgWrapper}>
-                    <View style={[globalStyles.modalBg,{backgroundColor: activeColorScheme.modalBackground, paddingHorizontal:16, paddingTop: 32}]}>
+                <View style={[globalStyles.modalBg,{backgroundColor: activeColorScheme.modalBackground, paddingHorizontal:16, paddingTop: 32}]}>
                         
-                        <View><Text style={[globalStyles.modalTitle, {color: activeColorScheme.textPrimary}]}>Select Image</Text></View>
-                        <View style={{maxHeight: dHeight - 27 - 17 - 62 - (dHeight / 8) }}>
-                            <ScrollView>
-                                <View onStartShouldSetResponder={() => true} style={{
-                                    flexDirection: 'row',
-                                    flexWrap: 'wrap',
-                                    // justifyContent: 'space-evenly'
-                                }}>
-                                    {featureImages.map((item, key) => {
-                                        let imageDim = (dWidth - 16 - 16 - 50) / 5;
-                                        return (
-                                            <OpacityLinks key={key} onPress={()=>{
-                                                this.setState({
-                                                    activeFeatureImage : item.id
-                                                })
-                                            }}>
-                                                <View style={{margin:5}}>
-                                                    <Image style={{width: imageDim, height: imageDim, maxHeight:80, maxWidth:80}} resizeMethod='resize' source={{uri: item.uri}} resizeMode='contain' />
-                                                    { this.state.activeFeatureImage == item.id ? <View style={styles.itemCheckMark}>
-                                                        <CheckedIcon height={28} width={28} checkedStatus={true} theme={this.props.theme} />
-                                                    </View> : null}
-                                                </View>
-                                            </OpacityLinks>
-                                        )
-                                    })}
-                                </View>
-                            </ScrollView>
-                        </View>  
-                    </View>
+                    <View><Text style={[globalStyles.modalTitle, {color: activeColorScheme.textPrimary}]}>Select Image</Text></View>
+                    <View style={{maxHeight: dHeight - 27 - 17 - 62 - (dHeight / 8) }}>
+                        <ScrollView>
+                            <View onStartShouldSetResponder={() => true} style={{
+                                flexDirection: 'row',
+                                flexWrap: 'wrap',
+                                // justifyContent: 'space-evenly'
+                            }}>
+                                {featureImages.map((item, key) => {
+                                    let imageDim = (dWidth - 16 - 16 - 50) / 5;
+                                    return (
+                                        <OpacityLinks key={key} onPress={()=>{
+                                            this.setState({
+                                                activeFeatureImage : item.id
+                                            })
+                                        }}>
+                                            <View style={{margin:5}}>
+                                                <Image style={{width: imageDim, height: imageDim, maxHeight:80, maxWidth:80}} resizeMethod='resize' source={{uri: item.uri}} resizeMode='contain' />
+                                                { this.state.activeFeatureImage == item.id ? <View style={styles.itemCheckMark}>
+                                                    <CheckedIcon height={28} width={28} checkedStatus={true} theme={this.props.theme} />
+                                                </View> : null}
+                                            </View>
+                                        </OpacityLinks>
+                                    )
+                                })}
+                            </View>
+                        </ScrollView>
+                    </View>  
                 </View>
             </FeatureImagesModal>
         </View>
     )
+
+    getItemsFromRealm=()=>{
+        Realm.open({
+            path: realmStorePath,
+            schema: [
+                ListSchemas.listSchema,
+                ListSchemas.listItemsSchema,
+                ListSchemas.unitSymbolSchema,
+                ListSchemas.listItemsCategoriesSchema,
+                ListSchemas.currencySchema
+            ]
+        }).then(realm => {
+            let listDetails = JSON.parse(JSON.stringify(realm.objects('list').filtered(`_id == '${this.props.listId}'`)[0]));
+            // console.log(JSON.stringify(realm.objects('list').filtered(`_id == '${this.props.listId}'`)[0], null, 2));
+            this.setState({
+                activeFeatureImage: listDetails.featureImage,
+                currency:listDetails.currency,
+                listTitle: listDetails.name,
+                listItemCategories:listDetails.categories,
+                listItems:listDetails.items
+            }, ()=> realm.close())
+            
+        }).catch(e => {
+            console.log(e);
+        })
+    }
 
     render() {
         let activeColorScheme = colorScheme[this.props.colorScheme == 'dark' ? 'dark' : 'light'];
@@ -562,7 +651,7 @@ export class ListCreation extends Component {
             <View style={[globalStyles.container, {backgroundColor: activeColorScheme.background }]} >
                 <Header
                     colors={activeColorScheme} 
-                    title = {'New List'}
+                    title = {this.props.showAsEdit ? 'Update List' : 'New List'}
                     hideBackButton = {false}
                     leftIcons = {['currencySwap']}
                     currencySwapIconAction = {()=> this.setState({showCurrencyModal: true, currencyModalOpenedOnce: true})}
@@ -582,10 +671,12 @@ export class ListCreation extends Component {
                         <View>
                             <TextInput 
                                 value={this.state.listTitle}
-                                onChangeText = {(val) => this.setState({listTitle: val})}
+                                onChangeText = {(val) => this.setState({listTitle: this.trimInputVal(val)})}
                                 maxLength={30}
                                 autoCapitalize={'words'}
-
+                                placeholder={'Enter List Title'}
+                                placeholderTextColor={activeColorScheme.inputPlaceholder}
+                                selectTextOnFocus
                                 style={[styles.listTitle, {color: activeColorScheme.textPrimary}]}
                             />
                         </View>
@@ -599,13 +690,17 @@ export class ListCreation extends Component {
                 <FloatingButtonView 
                     type='singleButton'
                     content={{
-                        text:'Create list',
+                        text: this.props.showAsEdit ? 'Update List' : 'Create list',
                         icon: <MenuHalfedIcon height={14} width={21} />
                     }} 
                     theme={this.props.theme} 
                     colors={activeColorScheme} 
                     onPress= {()=>{
-                        alert('pie')
+                        if(typeof this.state.listTitle !== 'undefined' && this.state.listTitle && this.state.listTitle.trim() !== ''){
+                            this.props.showAsEdit ? this.updateListDetails() : this.createList();
+                        }else{
+                            
+                        }
                     }} 
 
                     style={{top: dHeight - 140}}
