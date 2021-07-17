@@ -25,10 +25,16 @@ import {dWidth, realmStorePath, currencies,featureImages, mongoClientCluster} fr
 
 class ListDetails extends Component {
 
-    realm;
+    
     user = realmApp.currentUser;
+    realm;
     storedLists;
     storedListDetails;
+
+    syncedRealm;
+    syncedStoredLists;
+    syncedStoredListDetails;
+
     totalPrice = 0;
 
     state={
@@ -98,12 +104,19 @@ class ListDetails extends Component {
             } 
         });
 
-        this.getListDetails().then(()=>{
+        this.getLocalListDetails().then(()=>{
             this.state.listDetails.items.map(item => {
                 (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
                 this.forceUpdate()
             })
-        })
+        });
+
+        this.props.isSynced ? this.getSyncedListDetails().then(()=>{
+            this.state.listDetails.items.map(item => {
+                (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
+                this.forceUpdate()
+            })
+        }) : null
     }
 
     componentDidUpdate(prevProps){
@@ -123,22 +136,10 @@ class ListDetails extends Component {
         }
     }
 
-    getListDetails = async() => {
+    getLocalListDetails = async() => {
         try {
-            // console.log(JSON.stringify(this.user, null, 2));
-            let realmDetails = this.state.isSynced ? { 
-                sync: {
-                    user: this.user,
-                    partitionValue: "public"
-                }, 
-                error: (a,b)=> console.log(a,b)
-            } : {path: realmStorePath}
-
-            
-            // console.log('dddf');
-
             this.realm = await Realm.open({
-                ...realmDetails,
+                path: realmStorePath,
                 schema: [
                     ListSchemas.listSchema,
                     ListSchemas.listItemsSchema,
@@ -166,10 +167,12 @@ class ListDetails extends Component {
                     let modifiedList = lists[index];
                     // console.log(modifiedTask);
                     console.log(`modifiedTask: ${JSON.stringify(modifiedList, null, 2)}`);
-                    this.setState({
-                        isSynced: modifiedList.synced,
-                        listDetails: modifiedList
-                    })
+                    if(!modifiedList.synced){
+                        this.setState({
+                            // isSynced: modifiedList.synced,
+                            listDetails: modifiedList
+                        })
+                    }
                     // ...
                 });
             });
@@ -185,9 +188,9 @@ class ListDetails extends Component {
         }
     }
 
-    syncListToRealm = async() => {
+    getSyncedListDetails = async() => {
         try {
-            this.realm = await Realm.open({
+            this.syncedRealm = await Realm.open({
                 sync: {
                     user: this.user,
                     partitionValue: "public"
@@ -201,33 +204,18 @@ class ListDetails extends Component {
                     ListSchemas.currencySchema
                 ],
             });
+            // console.log('ddd');
+            // console.log("Realm is located at: " + this.realm.path);
             
-            this.storedLists = this.realm.objects('list');
+            this.syncedStoredLists = this.syncedRealm.objects('list');
+            
+            this.syncedStoredListDetails = this.syncedStoredLists.filtered(`_id == '${this.props.listId}'`)[0];
 
-            let listCode = 'S' + randomString(5)
-
-            let keepCheckingCode = true
-            while(keepCheckingCode){
-                let listObject = this.storedLists.filtered(`code == '${listCode}'`);
-                if(listObject.length > 0){
-                    this.wishlistCode = "S" + randomString(5)
-                }else{
-                    keepCheckingCode = false
-                }
-            }
-
-            this.realm.write(() => {
-                this.storedListDetails = this.realm.create("list", { 
-                    ...this.state.listDetails,
-                    synced : true,
-                    dateModified : new Date(),
-                    lastActivityLog : `Synced List To Cloud`
-                });
+            this.syncedRealm.write(() => {
+                this.syncedStoredListDetails.lastViewed = new Date();
             });
 
-            console.log('List Synched ass ===>', JSON.stringify(this.storedListDetails, null, 2));
-
-            this.storedLists.addListener((lists,changes)=>{
+            this.syncedStoredLists.addListener((lists,changes)=>{
                 // Update UI in response to modified objects
                 // `newModifications` contains object indexes from after they were modified
                 // console.log(changes);
@@ -244,9 +232,85 @@ class ListDetails extends Component {
             });
 
             this.setState({
-                isOwner: this.storedListDetails.ownerId == getUniqueId(),
+                isLoading: false,
+                isOwner: this.syncedStoredListDetails.ownerId == getUniqueId(),
+                // isSynced: this.storedListDetails.synced,
+                listDetails: this.syncedStoredListDetails
+            });
+        } catch (error) {
+            console.log('Error ==> ',error);
+            this.syncedRealm.close();
+
+            this.realm.write(() => {
+                this.storedListDetails.synced = false;
+                this.storedListDetails.dateModified = new Date();
+                this.storedListDetails.lastActivityLog = `Un-Synced List From Cloud`;
+            });
+        }
+    }
+
+    syncListToRealm = async() => {
+        try {
+            this.syncedRealm = await Realm.open({
+                sync: {
+                    user: this.user,
+                    partitionValue: "public"
+                }, 
+                error: (a,b)=> console.log(a,b),
+                schema: [
+                    ListSchemas.listSchema,
+                    ListSchemas.listItemsSchema,
+                    ListSchemas.unitSymbolSchema,
+                    ListSchemas.listItemsCategoriesSchema,
+                    ListSchemas.currencySchema
+                ],
+            });
+            
+            this.syncedStoredLists = this.syncedRealm.objects('list');
+
+            let listCode = 'S' + randomString(5)
+
+            let keepCheckingCode = true
+            while(keepCheckingCode){
+                let listObject = this.syncedStoredLists.filtered(`code == '${listCode}'`);
+                if(listObject.length > 0){
+                    this.wishlistCode = "S" + randomString(5)
+                }else{
+                    keepCheckingCode = false
+                }
+            }
+
+            this.syncedRealm.write(() => {
+                this.syncedStoredLists = this.syncedRealm.create("list", { 
+                    ...this.state.listDetails,
+                    synced : true,
+                    dateModified : new Date(),
+                    lastActivityLog : `Synced List To Cloud`
+                });
+            });
+
+            console.log('List Synched ass ===>', JSON.stringify(this.syncedStoredLists, null, 2));
+
+            this.syncedStoredLists.addListener((lists,changes)=>{
+                // Update UI in response to modified objects
+                // `newModifications` contains object indexes from after they were modified
+                // console.log(changes);
+                changes.newModifications.forEach((index) => {
+                    let modifiedList = lists[index];
+                    // console.log(modifiedTask);
+                    console.log(`modifiedTask: ${JSON.stringify(modifiedList, null, 2)}`);
+                    this.setState({
+                        isSynced: modifiedList.synced,
+                        listDetails: modifiedList
+                    })
+                    // ...
+                });
+            });
+
+            this.setState({
+                isOwner: this.syncedStoredListDetails.ownerId == getUniqueId(),
                 isSynced: true,
-                listDetails: this.storedListDetails
+                listDetails: this.syncedStoredListDetails
             });
         } catch (error) {
             console.log('Error ==> ',error);
@@ -416,13 +480,17 @@ class ListDetails extends Component {
                             {
                                 refreshView: ()=>{
                                     this.props.refreshView();
-                                    this.getListDetails().then(() =>{
-                                        this.getListDetails().then(()=>{
-                                            this.totalPrice = 0;
-                                            this.state.listDetails.items.map(item => {
-                                                (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
-                                                this.forceUpdate()
-                                            })
+                                    this.props.isSynced ? this.getSyncedListDetails().then(()=>{
+                                        this.totalPrice = 0;
+                                        this.state.listDetails.items.map(item => {
+                                            (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
+                                            this.forceUpdate()
+                                        })
+                                    }) : this.getLocalListDetails().then(()=>{
+                                        this.totalPrice = 0;
+                                        this.state.listDetails.items.map(item => {
+                                            (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
+                                            this.forceUpdate()
                                         })
                                     });
                                 },
@@ -457,7 +525,19 @@ class ListDetails extends Component {
     )
 
     renderLoader= (activeColorScheme) => {
-        this.getListDetails();
+        this.props.isSynced ? this.getSyncedListDetails().then(()=>{
+            this.totalPrice = 0;
+            this.state.listDetails.items.map(item => {
+                (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
+                this.forceUpdate()
+            })
+        }) : this.getLocalListDetails().then(()=>{
+            this.totalPrice = 0;
+            this.state.listDetails.items.map(item => {
+                (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
+                this.forceUpdate()
+            })
+        });
         return (
             <View style={{flex: 1}}>
                 <View><Text style={[styles.searchTitle, {color: activeColorScheme.textPrimary}]}>Searching...</Text></View>
@@ -467,7 +547,7 @@ class ListDetails extends Component {
                     style={styles.emptyStateAnimation}
                     speed={0.5}
                 />
-                {/* {this.getListDetails()} */}
+                {/* {this.getLocalListDetails()} */}
             </View>
         )
     }
