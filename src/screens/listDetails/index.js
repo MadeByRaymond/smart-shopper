@@ -480,7 +480,7 @@ class ListDetails extends Component {
                             {
                                 refreshView: ()=>{
                                     this.props.refreshView();
-                                    this.props.isSynced ? this.getSyncedListDetails().then(()=>{
+                                    this.state.isSynced ? this.getSyncedListDetails().then(()=>{
                                         this.totalPrice = 0;
                                         this.state.listDetails.items.map(item => {
                                             (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
