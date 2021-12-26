@@ -76,7 +76,7 @@ export const unitSymbols = [
     {
         id: 2,
         name: 'Units',
-        symbol: 'unts'
+        symbol: 'unt'
     },
     {
         id: 3,

@@ -7,9 +7,9 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "reset": "react-native run-android -- --reset-cache",
-    "clear-all": "npm cache clean --force && npm install && npm start -- --reset-cache",
     "test": "jest",
     "lint": "eslint .",
+    "clear-all": "npm cache clean --force && npm install && npm start -- --reset-cache",
     "clean-android": "cd android && gradlew clean && cd ..",
     "clean-assemble-android": "cd android && gradlew clean assembleDebug && cd ..",
     "bundle-release": "cd android && gradlew bundleRelease"
