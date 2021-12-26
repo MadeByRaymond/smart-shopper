@@ -209,7 +209,13 @@ class ListDetails extends Component {
             
             this.syncedStoredLists = this.syncedRealm.objects('list');
             
-            this.syncedStoredListDetails = this.syncedStoredLists.filtered(`_id == '${this.props.listId}'`)[0];
+            let syncedLists = this.syncedStoredLists.filtered(`_id == '${this.props.listId}'`);
+
+            if(syncedLists.length < 1){
+                throw 'List Not Synced'
+            }else{
+                this.syncedStoredListDetails = syncedLists[0]
+            }
 
             this.syncedRealm.write(() => {
                 this.syncedStoredListDetails.lastViewed = new Date();
@@ -282,9 +288,21 @@ class ListDetails extends Component {
 
             this.syncedRealm.write(() => {
                 this.syncedStoredLists = this.syncedRealm.create("list", { 
-                    ...this.state.listDetails,
-                    synced : true,
-                    dateModified : new Date(),
+                    // ...this.state.listDetails,
+                    _id: this.state.listDetails._id,
+                    _partition : this.state.listDetails._partition,
+                    synced: true,
+                    name: this.state.listDetails.name,
+                    items: this.state.listDetails.items,
+                    categories: this.state.listDetails.categories,
+                    currency: this.state.listDetails.currency,
+                    featureImage: this.state.listDetails.featureImage,
+                    code: this.wishlistCode,
+                    status: this.state.listDetails.status,
+                    ownerId: this.state.listDetails.ownerId,
+                    dateCreated: this.state.listDetails.dateCreated,
+                    dateModified: new Date(),
+                    lastViewed: this.state.listDetails.lastViewed,
                     lastActivityLog : `Synced List To Cloud`
                 });
             });
@@ -401,14 +419,16 @@ class ListDetails extends Component {
 
 
                                 try{
-                                    const mongo = realmApp.currentUser.mongoClient(mongoClientCluster);
-                                    const collection = mongo.db("lysts").collection("smartshopper_lists");
+                                    // const mongo = realmApp.currentUser.mongoClient(mongoClientCluster);
+                                    // const collection = mongo.db("lysts").collection("smartshopper_lists");
 
-                                    const result = await collection.insertOne(this.state.listDetails);
+                                    // const result = await collection.insertOne(this.state.listDetails);
 
-                                    console.log(`Successfully inserted item with _id: ${result.insertedId}`)
+                                    // console.log(`Successfully inserted item with _id: ${result.insertedId}`)
                                     
-                                    this.setState({syncModal:false})
+                                    // this.setState({syncModal:false})
+
+                                    await this.syncListToRealm()
                                 }catch(error){
                                     console.log('Error Syncing List ---> ', error);
                                     this.realm.write(() => {

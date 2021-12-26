@@ -243,6 +243,8 @@ Navigation.events().registerAppLaunchedListener(async() => {
   try {
     await startupFunctions();
     realmApp.logIn(Realm.Credentials.anonymous());
+    // await realmApp.logIn(Realm.Credentials.emailPassword("demo@mymail.com", "password"));
+    // console.log(realmApp.currentUser.id);
   } catch (error) {
     console.log(e);
   }
