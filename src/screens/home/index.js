@@ -132,8 +132,8 @@ class Home extends Component {
                             listName = {item.name}
                             listId = {item._id}
                             loadOnView= {item.synced}
-                            isSynced= {item.synced}
-                            isOwner = {item.ownerId == getUniqueId()}
+                            // isSynced= {item.synced}
+                            // isOwner = {item.ownerId == getUniqueId()}
                             refreshView= {() => this.getListsFromStore()}
                         />
                     ))}

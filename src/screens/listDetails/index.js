@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
-import { Text, StyleSheet, View, ScrollView, BackHandler } from 'react-native'
+import { Text, StyleSheet, View, ScrollView } from 'react-native'
 import { connect } from 'react-redux'
-import SyncModal from 'react-native-modal'
+// import SyncModal from 'react-native-modal'
+import ActionsModal from 'react-native-modal'
 import Realm from "realm";
 import { Navigation } from 'react-native-navigation';
 import LottieView from 'lottie-react-native';
@@ -14,10 +15,9 @@ import CheckedIcon from '../../vectors/checkIcon/checkedIcon';
 import FloatingButtonView from '../../components/buttons/floatingButtonView'
 import Button from '../../components/buttons/singleButton'
 import {OpacityLinks} from '../../components/links'
-import {ShareIcon, CopyIcon, EditIcon, TrashIcon} from '../../vectors/generalIcons'
+import {ShareIcon, CopyIcon, EditIcon, TrashIcon, StarredIcon} from '../../vectors/generalIcons'
 
 import {ListSchemas} from '../../realm-storage/schemas'
-import {app as realmApp} from '../../realm-storage/realm'
 
 // Includes 
 import {updateStatusBarAppearance, navigateToScreen, onShare, randomString} from '../../includes/functions';
@@ -25,15 +25,9 @@ import {dWidth, realmStorePath, currencies,featureImages, mongoClientCluster} fr
 
 class ListDetails extends Component {
 
-    
-    user = realmApp.currentUser;
     realm;
     storedLists;
     storedListDetails;
-
-    syncedRealm;
-    syncedStoredLists;
-    syncedStoredListDetails;
 
     totalPrice = 0;
 
@@ -41,17 +35,15 @@ class ListDetails extends Component {
         isLoading: this.props.isLoading,
         showButtonLabels: false,
         showActionsMenu: false,
-        syncModal: false,
-        isOwner: this.props.isOwner,
-        isSynced: this.props.isSynced,
-        isSyncing: false,
+        // syncModal: false,
+        // isOwner: this.props.isOwner,
         isStarred: false,
         showPrice: false,
 
         listDetails: {
             _id: '',
             _partition : '',
-            synced: false,
+            // synced: false,
             name: '',
             items: [
                 {
@@ -80,7 +72,7 @@ class ListDetails extends Component {
             featureImage: featureImages[0].id,
             code: '',
             status: "",
-            ownerId: '',
+            // ownerId: '',
             dateCreated: new Date(),
             dateModified: new Date(),
             lastViewed: new Date(),
@@ -110,13 +102,6 @@ class ListDetails extends Component {
                 this.forceUpdate()
             })
         });
-
-        this.props.isSynced ? this.getSyncedListDetails().then(()=>{
-            this.state.listDetails.items.map(item => {
-                (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
-                this.forceUpdate()
-            })
-        }) : null
     }
 
     componentDidUpdate(prevProps){
@@ -167,168 +152,21 @@ class ListDetails extends Component {
                     let modifiedList = lists[index];
                     // console.log(modifiedTask);
                     console.log(`modifiedTask: ${JSON.stringify(modifiedList, null, 2)}`);
-                    if(!modifiedList.synced){
+                    // if(!modifiedList.synced){
                         this.setState({
                             // isSynced: modifiedList.synced,
                             listDetails: modifiedList
                         })
-                    }
+                    // }
                     // ...
                 });
             });
 
             this.setState({
                 isLoading: false,
-                isOwner: this.storedListDetails.ownerId == getUniqueId(),
+                // isOwner: this.storedListDetails.ownerId == getUniqueId(),
                 // isSynced: this.storedListDetails.synced,
                 listDetails: this.storedListDetails
-            });
-        } catch (error) {
-            console.log('Error ==> ',error);
-        }
-    }
-
-    getSyncedListDetails = async() => {
-        try {
-            this.syncedRealm = await Realm.open({
-                sync: {
-                    user: this.user,
-                    partitionValue: "public"
-                }, 
-                error: (a,b)=> console.log(a,b),
-                schema: [
-                    ListSchemas.listSchema,
-                    ListSchemas.listItemsSchema,
-                    ListSchemas.unitSymbolSchema,
-                    ListSchemas.listItemsCategoriesSchema,
-                    ListSchemas.currencySchema
-                ],
-            });
-            // console.log('ddd');
-            // console.log("Realm is located at: " + this.realm.path);
-            
-            this.syncedStoredLists = this.syncedRealm.objects('list');
-            
-            let syncedLists = this.syncedStoredLists.filtered(`_id == '${this.props.listId}'`);
-
-            if(syncedLists.length < 1){
-                throw 'List Not Synced'
-            }else{
-                this.syncedStoredListDetails = syncedLists[0]
-            }
-
-            this.syncedRealm.write(() => {
-                this.syncedStoredListDetails.lastViewed = new Date();
-            });
-
-            this.syncedStoredLists.addListener((lists,changes)=>{
-                // Update UI in response to modified objects
-                // `newModifications` contains object indexes from after they were modified
-                // console.log(changes);
-                changes.newModifications.forEach((index) => {
-                    let modifiedList = lists[index];
-                    // console.log(modifiedTask);
-                    console.log(`modifiedTask: ${JSON.stringify(modifiedList, null, 2)}`);
-                    this.setState({
-                        isSynced: modifiedList.synced,
-                        listDetails: modifiedList
-                    })
-                    // ...
-                });
-            });
-
-            this.setState({
-                isLoading: false,
-                isOwner: this.syncedStoredListDetails.ownerId == getUniqueId(),
-                // isSynced: this.storedListDetails.synced,
-                listDetails: this.syncedStoredListDetails
-            });
-        } catch (error) {
-            console.log('Error ==> ',error);
-            this.syncedRealm.close();
-
-            this.realm.write(() => {
-                this.storedListDetails.synced = false;
-                this.storedListDetails.dateModified = new Date();
-                this.storedListDetails.lastActivityLog = `Un-Synced List From Cloud`;
-            });
-        }
-    }
-
-    syncListToRealm = async() => {
-        try {
-            this.syncedRealm = await Realm.open({
-                sync: {
-                    user: this.user,
-                    partitionValue: "public"
-                }, 
-                error: (a,b)=> console.log(a,b),
-                schema: [
-                    ListSchemas.listSchema,
-                    ListSchemas.listItemsSchema,
-                    ListSchemas.unitSymbolSchema,
-                    ListSchemas.listItemsCategoriesSchema,
-                    ListSchemas.currencySchema
-                ],
-            });
-            
-            this.syncedStoredLists = this.syncedRealm.objects('list');
-
-            let listCode = 'S' + randomString(5)
-
-            let keepCheckingCode = true
-            while(keepCheckingCode){
-                let listObject = this.syncedStoredLists.filtered(`code == '${listCode}'`);
-                if(listObject.length > 0){
-                    this.wishlistCode = "S" + randomString(5)
-                }else{
-                    keepCheckingCode = false
-                }
-            }
-
-            this.syncedRealm.write(() => {
-                this.syncedStoredLists = this.syncedRealm.create("list", { 
-                    // ...this.state.listDetails,
-                    _id: this.state.listDetails._id,
-                    _partition : this.state.listDetails._partition,
-                    synced: true,
-                    name: this.state.listDetails.name,
-                    items: this.state.listDetails.items,
-                    categories: this.state.listDetails.categories,
-                    currency: this.state.listDetails.currency,
-                    featureImage: this.state.listDetails.featureImage,
-                    code: this.wishlistCode,
-                    status: this.state.listDetails.status,
-                    ownerId: this.state.listDetails.ownerId,
-                    dateCreated: this.state.listDetails.dateCreated,
-                    dateModified: new Date(),
-                    lastViewed: this.state.listDetails.lastViewed,
-                    lastActivityLog : `Synced List To Cloud`
-                });
-            });
-
-            console.log('List Synched ass ===>', JSON.stringify(this.syncedStoredLists, null, 2));
-
-            this.syncedStoredLists.addListener((lists,changes)=>{
-                // Update UI in response to modified objects
-                // `newModifications` contains object indexes from after they were modified
-                // console.log(changes);
-                changes.newModifications.forEach((index) => {
-                    let modifiedList = lists[index];
-                    // console.log(modifiedTask);
-                    console.log(`modifiedTask: ${JSON.stringify(modifiedList, null, 2)}`);
-                    this.setState({
-                        isSynced: modifiedList.synced,
-                        listDetails: modifiedList
-                    })
-                    // ...
-                });
-            });
-
-            this.setState({
-                isOwner: this.syncedStoredListDetails.ownerId == getUniqueId(),
-                isSynced: true,
-                listDetails: this.syncedStoredListDetails
             });
         } catch (error) {
             console.log('Error ==> ',error);
@@ -364,18 +202,24 @@ class ListDetails extends Component {
         // })
     }
 
+    starList = ()=>{
+        this.setState((prevState)=> ({isStarred : !prevState.isStarred}))
+    }
 
-    renderListDetails = (activeColorScheme) => (
+
+    renderListDetails = (activeColorScheme) => {
+      return (
         <View style={{flex: 1}}>
             <Header
                 colors={activeColorScheme} 
-                leftIcons = {['menu', this.state.isOwner ? 'syncPill' : 'starred']}
-                isSynced = {this.state.isSynced}
-                isSyncing = {this.state.isSyncing}
+                // leftIcons = {['menu', this.state.isOwner ? 'syncPill' : 'starred']}
+                leftIcons = {['menu', 'starred']}
+                // isSynced = {this.state.isSynced}
+                // isSyncing = {this.state.isSyncing}
                 isStarred = {this.state.isStarred}
-                menuIconAction = {()=>{this.setState((prevState) => ({showActionsMenu: !prevState.showActionsMenu}))}}
-                syncIconAction = {(this.state.isSyncing || this.state.isSynced) ? null : ()=>{this.setState({syncModal: true})}}
-                starredIconAction = {()=> this.setState((prevState)=> ({isStarred : !prevState.isStarred}))}
+                menuIconAction = {()=>{this.setState({showActionsMenu: true})}}
+                // syncIconAction = {(this.state.isSyncing || this.state.isSynced) ? null : ()=>{this.setState({syncModal: true})}}
+                starredIconAction = {()=> this.starList()}
 
                 componentId = {this.props.componentId}
                 />
@@ -385,7 +229,7 @@ class ListDetails extends Component {
             </View>
 
 
-            {this.state.isOwner ? (<SyncModal 
+            {/*  this.state.isOwner ? (<SyncModal 
                 isVisible={this.state.syncModal}
                 hideModalContentWhileAnimating={true}
                 swipeDirection={'down'}
@@ -443,7 +287,7 @@ class ListDetails extends Component {
                         />
                     </View>
                 </View>
-            </SyncModal>) : null }
+            </SyncModal>) : null */ }
 
             <ScrollView style={globalStyles.scrollView} contentContainerStyle={globalStyles.scrollViewContainer} showsVerticalScrollIndicator={false} snapToEnd>
                 {this.state.listDetails.categories.map((category, i) => {
@@ -489,69 +333,90 @@ class ListDetails extends Component {
                 </View>
             </ScrollView>
 
-            {this.state.showActionsMenu ? (<FloatingButtonView 
-                type='multiButtons'
-                contents={this.state.isOwner ? [
-                    {text: 'Share', icon: ShareIcon, onPress:()=>{onShare('Share your list', `${this.state.listDetails.code} is my list code on SmartShopper. Take a look!`, 'Check out my SmartShopper list')}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isSynced, disabledPressAction: ()=>{this.setState({syncModal: true})}},
-                    {text: 'Copy', icon: CopyIcon, onPress:()=>{Clipboard.setString(this.state.listDetails.code)}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isSynced, disabledPressAction: ()=>{this.setState({syncModal: true})}},
-                    {text: 'Edit', icon:  EditIcon, onPress:()=>{navigateToScreen(
-                            this.props.componentId,
-                            'com.mbr.smartshopper.screen.listCreation',
-                            {
-                                refreshView: ()=>{
-                                    this.props.refreshView();
-                                    this.state.isSynced ? this.getSyncedListDetails().then(()=>{
-                                        this.totalPrice = 0;
-                                        this.state.listDetails.items.map(item => {
-                                            (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
-                                            this.forceUpdate()
-                                        })
-                                    }) : this.getLocalListDetails().then(()=>{
-                                        this.totalPrice = 0;
-                                        this.state.listDetails.items.map(item => {
-                                            (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
-                                            this.forceUpdate()
-                                        })
-                                    });
-                                },
-                                showAsEdit: true,
-                                listId: this.state.listDetails._id,
-                                isSynced: this.state.isSynced,
-                            }
-                        )}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isOwner, disabledPressAction: ()=>{/* Do Nothing */}},
-                    {text: 'Delete', icon: TrashIcon, onPress:()=>{
-                            this.realm.write(() => {
-                                // Delete the task from the realm.
-                                this.realm.delete(this.storedListDetails)
-                                // Discard the reference.
-                                // this.storedListDetails = null
-                            });
+            <ActionsModal
+                isVisible={this.state.showActionsMenu}
+                // hideModalContentWhileAnimating={true}
+                swipeDirection={['up','down']}
+                animationIn= {'slideInUp'}
+                animationInTiming={1}
+                animationOut= {'slideOutDown'}
+                animationOutTiming={500}
+                backdropOpacity={0.04}
+                onBackButtonPress= {() => this.setState({showActionsMenu : false})}
+                onBackdropPress= {() => this.setState({showActionsMenu : false})}
+                onSwipeComplete= {() => this.setState({showActionsMenu : false})}
+                style={{margin: 0}}
+            >
+                <FloatingButtonView 
+                    type='multiButtons'
+                    // contents={this.state.isOwner ? [
+                    contents={[
+                        {text: 'Share', icon: ShareIcon, onPress:()=>{onShare('Share your list', `${this.state.listDetails.code} is my list code on SmartShopper. Take a look!`, 'Check out my SmartShopper list')}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isSynced */ false, disabledPressAction: ()=>{this.setState({syncModal: true})}},
+                        // {text: 'Copy', icon: CopyIcon, onPress:()=>{Clipboard.setString(this.state.listDetails.code)}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isSynced, disabledPressAction: ()=>{this.setState({syncModal: true})}},
+                        {text: 'Favorite', icon: StarredIcon, onPress:()=> {this.starList()}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isSynced */ false, disabledPressAction: ()=>{this.setState({syncModal: true})}, isActive: this.state.isStarred},
+                        {text: 'Edit', icon:  EditIcon, onPress:()=>{navigateToScreen(
+                                this.props.componentId,
+                                'com.mbr.smartshopper.screen.listCreation',
+                                {
+                                    refreshView: ()=>{
+                                        this.props.refreshView();
+                                        // this.state.isSynced ? this.getSyncedListDetails().then(()=>{
+                                        //     this.totalPrice = 0;
+                                        //     this.state.listDetails.items.map(item => {
+                                        //         (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
+                                        //         this.forceUpdate()
+                                        //     })
+                                        // }) : 
+                                        this.getLocalListDetails().then(()=>{
+                                            this.totalPrice = 0;
+                                            this.state.listDetails.items.map(item => {
+                                                (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
+                                                this.forceUpdate()
+                                            })
+                                        });
+                                    },
+                                    showAsEdit: true,
+                                    listId: this.state.listDetails._id,
+                                    // isSynced: this.state.isSynced,
+                                }
+                            )}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isOwner */ false, disabledPressAction: ()=>{/* Do Nothing */}},
+                        {text: 'Delete', icon: TrashIcon, onPress:()=>{
+                                this.realm.write(() => {
+                                    // Delete the task from the realm.
+                                    this.realm.delete(this.storedListDetails)
+                                    // Discard the reference.
+                                    // this.storedListDetails = null
+                                });
 
-                            this.realm.close();
-                            this.props.refreshView();
-                            Navigation.pop(this.props.componentId)
-                        }, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isOwner, disabledPressAction: ()=>{/* Do Nothing */}
+                                // this.realm.close();
+                                this.props.refreshView();
+                                Navigation.pop(this.props.componentId)
+                            }, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isOwner */ false, disabledPressAction: ()=>{/* Do Nothing */}
+                        }
+                    ]
+                    // : [
+                    //     {text: 'Share', icon: ShareIcon, onPress:()=>{alert('pie')}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isSynced, disabledPressAction: ()=>{this.setState({syncModal: true})}},
+                    //     {text: 'Copy', icon: CopyIcon, onPress:()=>{alert('pie')}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isSynced, disabledPressAction: ()=>{this.setState({syncModal: true})}}
+                    // ]
                     }
-                ]
-                : [
-                    {text: 'Share', icon: ShareIcon, onPress:()=>{alert('pie')}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isSynced, disabledPressAction: ()=>{this.setState({syncModal: true})}},
-                    {text: 'Copy', icon: CopyIcon, onPress:()=>{alert('pie')}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isSynced, disabledPressAction: ()=>{this.setState({syncModal: true})}}
-                ]}
-                showButtonLabels={this.state.showButtonLabels}
-                theme={this.props.theme} 
-                colors={activeColorScheme} 
-            />) : null}
+                    showButtonLabels={this.state.showButtonLabels}
+                    theme={this.props.theme} 
+                    colors={activeColorScheme} 
+                />
+            </ActionsModal>
         </View>
-    )
+      )
+    }
 
     renderLoader= (activeColorScheme) => {
-        this.props.isSynced ? this.getSyncedListDetails().then(()=>{
-            this.totalPrice = 0;
-            this.state.listDetails.items.map(item => {
-                (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
-                this.forceUpdate()
-            })
-        }) : this.getLocalListDetails().then(()=>{
+        // this.props.isSynced ? this.getSyncedListDetails().then(()=>{
+        //     this.totalPrice = 0;
+        //     this.state.listDetails.items.map(item => {
+        //         (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
+        //         this.forceUpdate()
+        //     })
+        // }) : 
+        this.getLocalListDetails().then(()=>{
             this.totalPrice = 0;
             this.state.listDetails.items.map(item => {
                 (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;

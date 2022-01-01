@@ -15,8 +15,8 @@ const shoppingLists = (props) => {
             'com.mbr.smartshopper.screen.listDetails',
             {
                 listId: props.listId,
-                isSynced: props.isSynced,
-                isOwner: props.isOwner,
+                // isSynced: props.isSynced,
+                // isOwner: props.isOwner,
                 isLoading: props.loadOnView,
                 refreshView: props.refreshView
             }

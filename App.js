@@ -12,7 +12,6 @@ import ReduxStore from './src/store/storeConfig';
 import {setColorScheme, setTheme} from './src/store/actions';
 import {asyncStores, currencies} from './src/includes/variables';
 import {theme} from './src/components/uiComponents';
-import {app as realmApp} from './src/realm-storage/realm';
 
 // SPLASH SCREENS IMPORTS
 // import Splash from "./src/screens/splashScreen/splashScreen";
@@ -242,13 +241,11 @@ export const getRoot = async () =>{
 Navigation.events().registerAppLaunchedListener(async() => {
   try {
     await startupFunctions();
-    realmApp.logIn(Realm.Credentials.anonymous());
-    // await realmApp.logIn(Realm.Credentials.emailPassword("demo@mymail.com", "password"));
-    // console.log(realmApp.currentUser.id);
   } catch (error) {
     console.log(e);
+  } finally {
+    //  Navigation.setRoot(await isLoggedIn() ? mainRoot : loginRoot);
+    //  Navigation.setRoot(await getRoot());
+    Navigation.setRoot(mainRoot);
   }
-  //  Navigation.setRoot(await isLoggedIn() ? mainRoot : loginRoot);
-  //  Navigation.setRoot(await getRoot());
-  Navigation.setRoot(mainRoot);
 });
