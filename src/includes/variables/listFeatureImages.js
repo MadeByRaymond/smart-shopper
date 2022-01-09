@@ -1,366 +1,202 @@
 export const featureImages = [
     {
         id: 1,
-        uri: '_popsicle'
+        uri: '_anchor'
     },
     {
         id: 2,
-        uri: '_beach_ball'
+        uri: '_kite'
     },
     {
         id: 3,
-        uri: '_island'
+        uri: '_popsicle_001'
     },
     {
         id: 4,
-        uri: '_orange_juice'
+        uri: '_shovel'
     },
     {
         id: 5,
-        uri: '_island_002'
+        uri: '_popsicle_002'
     },
     {
         id: 6,
-        uri: '_popsicle'
+        uri: '_lifebuoy'
     },
     {
         id: 7,
-        uri: '_popsicle'
+        uri: '_surfboard'
     },
     {
         id: 8,
-        uri: '_popsicle'
+        uri: '_sun'
     },
     {
         id: 9,
-        uri: '_popsicle'
+        uri: '_sand_castle'
     },
     {
         id: 10,
-        uri: '_popsicle'
+        uri: '_temperature'
+    },
+    {
+        id: 11,
+        uri: '_watermelons'
     },
     {
         id: 12,
-        uri: '_popsicle'
+        uri: '_island_001'
     },
     {
         id: 13,
-        uri: '_popsicle'
+        uri: '_orange_juice'
     },
     {
         id: 14,
-        uri: '_popsicle'
+        uri: '_island_002'
     },
     {
         id: 15,
-        uri: '_popsicle'
+        uri: '_volleyball'
     },
     {
         id: 16,
-        uri: '_popsicle'
+        uri: '_starfish'
     },
     {
         id: 17,
-        uri: '_popsicle'
+        uri: '_drink_001'
     },
     {
         id: 18,
-        uri: '_popsicle'
+        uri: '_popsicle_003'
     },
     {
         id: 19,
-        uri: '_popsicle'
+        uri: '_shorts'
     },
     {
         id: 20,
-        uri: '_popsicle'
+        uri: '_bikini'
     },
     {
-        id: 2,
+        id: 21,
+        uri: '_pineapple'
+    },
+    {
+        id: 22,
         uri: '_beach_ball'
     },
     {
-        id: 3,
-        uri: '_island'
+        id: 23,
+        uri: '_ice_cream'
     },
     {
-        id: 4,
-        uri: '_orange_juice'
+        id: 24,
+        uri: '_luggage'
     },
     {
-        id: 5,
-        uri: '_island_002'
+        id: 25,
+        uri: '_slippers'
     },
     {
-        id: 6,
-        uri: '_popsicle'
+        id: 26,
+        uri: '_clam'
     },
     {
-        id: 7,
-        uri: '_popsicle'
+        id: 27,
+        uri: '_beach_sign'
     },
     {
-        id: 8,
-        uri: '_popsicle'
+        id: 28,
+        uri: '_hat'
     },
     {
-        id: 9,
-        uri: '_popsicle'
+        id: 29,
+        uri: '_swimming_pool'
     },
     {
-        id: 10,
-        uri: '_popsicle'
+        id: 30,
+        uri: '_drink_002'
     },
     {
-        id: 12,
-        uri: '_popsicle'
+        id: 31,
+        uri: '_picture'
     },
     {
-        id: 13,
-        uri: '_popsicle'
+        id: 32,
+        uri: '_sun_block'
     },
     {
-        id: 14,
-        uri: '_popsicle'
+        id: 33,
+        uri: '_coconut_drink'
     },
     {
-        id: 15,
-        uri: '_popsicle'
+        id: 34,
+        uri: '_drink_003'
     },
     {
-        id: 16,
-        uri: '_popsicle'
+        id: 35,
+        uri: '_camera'
     },
     {
-        id: 17,
-        uri: '_popsicle'
+        id: 36,
+        uri: '_passport'
     },
     {
-        id: 18,
-        uri: '_popsicle'
+        id: 37,
+        uri: '_beach_chair'
     },
     {
-        id: 19,
-        uri: '_popsicle'
+        id: 38,
+        uri: '_tent'
     },
     {
-        id: 20,
-        uri: '_popsicle'
+        id: 39,
+        uri: '_fire'
     },
     {
-        id: 2,
-        uri: '_beach_ball'
+        id: 40,
+        uri: '_lighthouse'
     },
     {
-        id: 3,
-        uri: '_island'
+        id: 41,
+        uri: '_boat'
     },
     {
-        id: 4,
-        uri: '_orange_juice'
+        id: 42,
+        uri: '_eyeglasses'
     },
     {
-        id: 5,
-        uri: '_island_002'
+        id: 43,
+        uri: '_sunset'
     },
     {
-        id: 6,
-        uri: '_popsicle'
+        id: 44,
+        uri: '_umbrella'
     },
     {
-        id: 7,
-        uri: '_popsicle'
+        id: 45,
+        uri: '_bbq'
     },
     {
-        id: 8,
-        uri: '_popsicle'
+        id: 46,
+        uri: '_sand_bucket'
     },
     {
-        id: 9,
-        uri: '_popsicle'
+        id: 47,
+        uri: '_waves'
     },
     {
-        id: 10,
-        uri: '_popsicle'
+        id: 48,
+        uri: '_snorkel'
     },
     {
-        id: 12,
-        uri: '_popsicle'
+        id: 49,
+        uri: '_swimsuit'
     },
     {
-        id: 13,
-        uri: '_popsicle'
-    },
-    {
-        id: 14,
-        uri: '_popsicle'
-    },
-    {
-        id: 15,
-        uri: '_popsicle'
-    },
-    {
-        id: 16,
-        uri: '_popsicle'
-    },
-    {
-        id: 17,
-        uri: '_popsicle'
-    },
-    {
-        id: 18,
-        uri: '_popsicle'
-    },
-    {
-        id: 19,
-        uri: '_popsicle'
-    },
-    {
-        id: 20,
-        uri: '_popsicle'
-    },
-    {
-        id: 2,
-        uri: '_beach_ball'
-    },
-    {
-        id: 3,
-        uri: '_island'
-    },
-    {
-        id: 4,
-        uri: '_orange_juice'
-    },
-    {
-        id: 5,
-        uri: '_island_002'
-    },
-    {
-        id: 6,
-        uri: '_popsicle'
-    },
-    {
-        id: 7,
-        uri: '_popsicle'
-    },
-    {
-        id: 8,
-        uri: '_popsicle'
-    },
-    {
-        id: 9,
-        uri: '_popsicle'
-    },
-    {
-        id: 10,
-        uri: '_popsicle'
-    },
-    {
-        id: 12,
-        uri: '_popsicle'
-    },
-    {
-        id: 13,
-        uri: '_popsicle'
-    },
-    {
-        id: 14,
-        uri: '_popsicle'
-    },
-    {
-        id: 15,
-        uri: '_popsicle'
-    },
-    {
-        id: 16,
-        uri: '_popsicle'
-    },
-    {
-        id: 17,
-        uri: '_popsicle'
-    },
-    {
-        id: 18,
-        uri: '_popsicle'
-    },
-    {
-        id: 19,
-        uri: '_popsicle'
-    },
-    {
-        id: 20,
-        uri: '_popsicle'
-    },
-    {
-        id: 2,
-        uri: '_beach_ball'
-    },
-    {
-        id: 3,
-        uri: '_island'
-    },
-    {
-        id: 4,
-        uri: '_orange_juice'
-    },
-    {
-        id: 5,
-        uri: '_island_002'
-    },
-    {
-        id: 6,
-        uri: '_popsicle'
-    },
-    {
-        id: 7,
-        uri: '_popsicle'
-    },
-    {
-        id: 8,
-        uri: '_popsicle'
-    },
-    {
-        id: 9,
-        uri: '_popsicle'
-    },
-    {
-        id: 10,
-        uri: '_popsicle'
-    },
-    {
-        id: 12,
-        uri: '_popsicle'
-    },
-    {
-        id: 13,
-        uri: '_popsicle'
-    },
-    {
-        id: 14,
-        uri: '_popsicle'
-    },
-    {
-        id: 15,
-        uri: '_popsicle'
-    },
-    {
-        id: 16,
-        uri: '_popsicle'
-    },
-    {
-        id: 17,
-        uri: '_popsicle'
-    },
-    {
-        id: 18,
-        uri: '_popsicle'
-    },
-    {
-        id: 19,
-        uri: '_popsicle'
-    },
-    {
-        id: 20,
-        uri: '_popsicle'
+        id: 50,
+        uri: '_flippers'
     }
 ]

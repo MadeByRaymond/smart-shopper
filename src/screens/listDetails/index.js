@@ -20,7 +20,7 @@ import {ShareIcon, CopyIcon, EditIcon, TrashIcon, StarredIcon} from '../../vecto
 import {ListSchemas} from '../../realm-storage/schemas'
 
 // Includes 
-import {updateStatusBarAppearance, navigateToScreen, onShare, randomString} from '../../includes/functions';
+import {updateComponentAppearance, navigateToScreen, onShare, randomString} from '../../includes/functions';
 import {dWidth, realmStorePath, currencies,featureImages, mongoClientCluster} from '../../includes/variables';
 
 class ListDetails extends Component {
@@ -80,21 +80,9 @@ class ListDetails extends Component {
         }
     }
 
-    backHandler;
-
     componentDidMount(){
-        updateStatusBarAppearance(this.props);
-
-        this.backHandler = BackHandler.addEventListener("hardwareBackPress", (e) =>{
-            // BackHandler.exitApp
-            
-            if(this.state.showActionsMenu){
-                this.setState({showActionsMenu: false})
-                return true;
-            }else{
-                return false
-            } 
-        });
+        // updateComponentAppearance(this.props);
+        console.log('ffff');
 
         this.getLocalListDetails().then(()=>{
             this.state.listDetails.items.map(item => {
@@ -106,16 +94,14 @@ class ListDetails extends Component {
 
     componentDidUpdate(prevProps){
         if(prevProps.colorScheme != this.props.colorScheme){
-            updateStatusBarAppearance(this.props);
+            updateComponentAppearance(this.props);
         }
     }
 
     componentWillUnmount(){
-        this.backHandler.remove()
-
         if(this.realm !== null && typeof this.realm !== 'undefined' && this.realm !== ""){
             this.realm.isInTransaction ? this.realm.cancelTransaction() : null;
-            this.realm.isClosed ? null : this.realm.close();
+            // this.realm.isClosed ? null : this.realm.close();
 
             this.storedLists ? this.storedLists.removeAllListeners() : null;
         }
@@ -446,7 +432,6 @@ class ListDetails extends Component {
                     ? this.renderLoader(activeColorScheme)
                     : this.renderListDetails(activeColorScheme)
                 }
-                {/* {alert(this.totalPrice)} */}
             </View>
         )
     }

@@ -15,7 +15,7 @@ import Button from '../../components/buttons/singleButton'
 import {setTheme, setColorScheme} from '../../store/actions'
 
 // Includes 
-import {updateStatusBarAppearance, onShare} from '../../includes/functions';
+import {updateComponentAppearance, onShare} from '../../includes/functions';
 import {currencies, customItemId, displayModes, asyncStores, charities, dHeight} from '../../includes/variables';
 
 export class Settings extends Component {
@@ -47,7 +47,7 @@ export class Settings extends Component {
     }
 
     componentDidMount(){
-        updateStatusBarAppearance(this.props);
+        // updateComponentAppearance(this.props);
 
         this.setState({charityOrg: charities[Math.floor(Math.random() * charities.length)]})
 
@@ -87,7 +87,7 @@ export class Settings extends Component {
 
     componentDidUpdate(prevProps){
         if(prevProps.colorScheme != this.props.colorScheme){
-            updateStatusBarAppearance(this.props);
+            updateComponentAppearance(this.props);
         }
     }
 
