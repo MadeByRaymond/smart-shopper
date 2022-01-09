@@ -4,7 +4,7 @@ import { Navigation } from "react-native-navigation";
 
 // ***** Component Imports *****
 // Icons and Vectors 
-import {MenuIcon, StarredIcon, BackIcon, SettingsIcon, SearchIcon, CurrencySwapIcon} from '../../vectors/generalIcons'
+import {MenuIcon, StarredIcon, BackIcon, SettingsIcon, SearchIcon, CurrencySwapIcon, ImportIcon} from '../../vectors/generalIcons'
 
 // Components 
 import {OpacityLinks} from '../links';
@@ -71,10 +71,12 @@ const Header = (props) => {
                     Navigation.pop(props.componentId)
                 }}><View><BackIcon width={24} height={21} colors={props.colors} /></View></OpacityLinks>
             }
-            {props.title && !props.hideBackButton ? <View><Text style={[styles.withBackTitle,{color: props.colors.textPrimary}]}>{props.title}</Text></View> : null }
+            {props.title && !props.hideBackButton ? <View><Text style={[styles.withBackTitle,{color: props.colors.subtext_1}]}>{props.title}</Text></View> : null }
             <View style={styles.leftIconsWrapper}>
                 {/* Search Icon  */}
                 {checkIfDisplayIcon(props.leftIcons, 'search') ? showSearchBar ? null : <OpacityLinks onPress={()=> setShowSearchBar(true)}><View style={styles.leftIcon}><SearchIcon width={24} height={21} colors={props.colors} /></View></OpacityLinks> : null}
+                {/* Import Icon  */}
+                {checkIfDisplayIcon(props.leftIcons, 'import') ? <OpacityLinks onPress={()=> props.showImportModal()}><View style={styles.leftIcon}><ImportIcon width={24} height={21} colors={props.colors} /></View></OpacityLinks> : null}
                 {/* Settings Icon  */}
                 {checkIfDisplayIcon(props.leftIcons, 'settings') ? <OpacityLinks onPress={()=>navigateToScreen(props.componentId,'com.mbr.smartshopper.screen.settings')}><View style={styles.leftIcon}><SettingsIcon width={24} height={21} colors={props.colors} /></View></OpacityLinks> : null}
                 {/* Synced Status Pill  */}

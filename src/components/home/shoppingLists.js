@@ -20,7 +20,7 @@ const shoppingLists = (props) => {
                 isLoading: props.loadOnView,
                 refreshView: props.refreshView
             }
-        )}>
+        )} disabled={props.isImportModal}>
             <View style={styles.itemContainer}>
                 <View style={styles.left}>
                     <View>
@@ -31,7 +31,7 @@ const shoppingLists = (props) => {
                         <View><Text style={[styles.subtext, {color: props.colors.subtext_2}]}>{props.itemsCount} products</Text></View>
                     </View>
                 </View>
-                <View style={styles.right}>
+                {props.isImportModal ? null : (<View style={styles.right}>
                     {props.starred ? (
                     <View style={styles.icon}>
                         <StarredIcon height={18} width={18} active={true}  />
@@ -40,7 +40,7 @@ const shoppingLists = (props) => {
                     <View style={styles.icon}>
                         <CaretIcon height={15} width={18} colors={props.colors} />
                     </View>
-                </View>
+                </View>)}
             </View>
         </OpacityLinks>
     )

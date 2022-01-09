@@ -1,7 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.smartshopper">
+  package="com.madebyraymond.smartshopper">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <queries>
+      <package android:name="com.madebyraymond.smartshopper.store" />
+      <package android:name="com.madebyraymond.smartshopper.services" />
+    </queries>
 
     <application
       android:name=".MainApplication"
@@ -20,6 +27,63 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
+
+        <!-- custom file start -->
+        <intent-filter
+          android:icon="@mipmap/ic_launcher"
+          android:label="@string/app_name">
+            <action android:name="android.intent.action.VIEW" />
+            <action android:name="android.intent.action.EDIT" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <!-- change custom file extension -->
+            <data
+              android:mimeType="application/octet-stream"
+              android:host="*"
+              android:pathPattern=".*\\.smartlist"
+            />
+            <data
+              android:mimeType="application/octet-stream"
+              android:host="*"
+              android:pathPattern=".*\\..*\\.smartlist"
+            />
+            <data
+              android:mimeType="application/octet-stream"
+              android:host="*"
+              android:pathPattern=".*\\..*\\..*\\.smartlist"
+            />
+            <data
+              android:mimeType="application/octet-stream"
+              android:host="*"
+              android:pathPattern=".*\\..*\\..*\\..*\\.smartlist"
+            />
+            <data
+              android:mimeType="application/octet-stream"
+              android:host="*"
+              android:pathPattern=".*\\..*\\..*\\..*\\..*\\.smartlist"
+            />
+            <data
+              android:mimeType="application/octet-stream"
+              android:host="*"
+              android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\.smartlist"
+            />
+            <data
+              android:mimeType="application/octet-stream"
+              android:host="*"
+              android:pathPattern=".*\\..*\\..*\\..*\\..*\\..*\\..*\\.smartlist"
+            />
+        </intent-filter>
+        <!-- custom file end -->
+
       </activity>
+
+      <provider
+        android:name="androidx.core.content.FileProvider"
+        android:authorities="com.madebyraymond.smartshopper.fileprovider"
+        android:grantUriPermissions="true"
+        android:exported="false">
+        <meta-data
+            android:name="android.support.FILE_PROVIDER_PATHS"
+            android:resource="@xml/filepaths" />
+      </provider>
     </application>
 </manifest>

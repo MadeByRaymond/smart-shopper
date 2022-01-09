@@ -62,5 +62,46 @@
 		<string>Triomphe-Light.ttf</string>
 		<string>Triomphe-Regular.ttf</string>
 	</array>
+
+	<!-- custom file start -->
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Custom File</string>
+			<key>UTTypeIdentifier</key>
+			<!-- change custom file extension -->
+			<string>com.example.document.smartlist</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<!-- change custom file extension -->
+				<array>
+					<string>smartlist</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Custom File</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<!-- change custom file extension -->
+				<string>com.example.document.smartlist</string>
+			</array>
+		</dict>
+	</array>
+	<!-- custom file end -->
 </dict>
 </plist>

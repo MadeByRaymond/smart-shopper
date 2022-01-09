@@ -1,4 +1,6 @@
-package com.smartshopper;
+package com.madebyraymond.smartshopper;
+
+import cl.json.ShareApplication;
 
 import android.app.Application;
 import android.content.Context;
@@ -18,7 +20,12 @@ import com.facebook.soloader.SoLoader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-public class MainApplication extends NavigationApplication {
+public class MainApplication extends NavigationApplication implements ShareApplication{
+
+  @Override
+  public String getFileProviderAuthority() {
+    return BuildConfig.APPLICATION_ID + ".fileprovider";
+  }
 
   private final ReactNativeHost mReactNativeHost =
       new NavigationReactNativeHost(this) {
@@ -69,7 +76,7 @@ public class MainApplication extends NavigationApplication {
          We use reflection here to pick up the class that initializes Flipper,
         since Flipper library is not available in release mode
         */
-        Class<?> aClass = Class.forName("com.smartshopper.ReactNativeFlipper");
+        Class<?> aClass = Class.forName("com.madebyraymond.smartshopper.ReactNativeFlipper");
         aClass
             .getMethod("initializeFlipper", Context.class, ReactInstanceManager.class)
             .invoke(null, context, reactInstanceManager);

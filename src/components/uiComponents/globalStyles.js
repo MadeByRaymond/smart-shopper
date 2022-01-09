@@ -112,4 +112,16 @@ export const globalStyles = StyleSheet.create({
 
         marginBottom: 17
     },
+    modalContentText:{
+        fontFamily: 'Gilroy-Medium', 
+        fontSize: 15.5,
+        lineHeight: 19,
+
+        paddingBottom: 10,
+        opacity: 0.86
+    },
+    modalBtnWrapper:{
+        marginTop: 30,
+        marginBottom: 20
+    }
 })

@@ -8,6 +8,8 @@ import { Navigation } from 'react-native-navigation';
 import LottieView from 'lottie-react-native';
 import {getUniqueId} from 'react-native-device-info';
 import Clipboard from "@react-native-community/clipboard";
+import * as RNFS from 'react-native-fs';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Header from '../../components/header';
 import {globalStyles, colorScheme} from '../../components/uiComponents'
@@ -337,7 +339,36 @@ class ListDetails extends Component {
                     type='multiButtons'
                     // contents={this.state.isOwner ? [
                     contents={[
-                        {text: 'Share', icon: ShareIcon, onPress:()=>{onShare('Share your list', `${this.state.listDetails.code} is my list code on SmartShopper. Take a look!`, 'Check out my SmartShopper list')}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isSynced */ false, disabledPressAction: ()=>{this.setState({syncModal: true})}},
+                        {text: 'Share', icon: ShareIcon, onPress:()=>{
+                            let filePath = `${RNFS.TemporaryDirectoryPath}/${this.state.listDetails.name.trim() == '' ? 'My shopping list' : this.state.listDetails.name.trim()}.smartlist`;
+                            RNFS.writeFile(filePath, JSON.stringify(this.state.listDetails), 'utf8')
+                            .then((success) => {
+                                // console.log('FILE WRITTEN!');
+                                // console.log('Result: ', filePath);
+                                onShare('Share your list', `Here's my list “${this.state.listDetails.name}” on SmartShopper. Get the app on android now: https://play.google.com/store/apps/details?id=com.madebyraymond.smartshopper`, 'Check out my SmartShopper list', 'file://' + filePath)
+                                .catch(e =>{
+                                    if(__DEV__) console.log(e);
+                                })
+                                .finally(()=>{
+                                    return RNFS.unlink(filePath)
+                                    .then(() => {
+                                        if(__DEV__) console.log('FILE DELETED');
+                                    })
+                                    // `unlink` will throw an error, if the item to unlink does not exist
+                                    .catch((err) => {
+                                        if(__DEV__) console.log(err.message);
+                                    });
+                                })
+                            })
+                            .catch((err) => {
+                                onShare('Share your list', `I have my list “${this.state.listDetails.name}” on SmartShopper. Get the app on android now: https://play.google.com/store/apps/details?id=com.madebyraymond.smartshopper`, 'Check out my SmartShopper list')
+                                .catch(e =>{
+                                    if(__DEV__) console.log(e);
+                                })
+
+                                if(__DEV__) console.log('Error: ',err.message);
+                            });
+                        }, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isSynced */ false, disabledPressAction: ()=>{this.setState({syncModal: true})}},
                         // {text: 'Copy', icon: CopyIcon, onPress:()=>{Clipboard.setString(this.state.listDetails.code)}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isSynced, disabledPressAction: ()=>{this.setState({syncModal: true})}},
                         {text: 'Favorite', icon: StarredIcon, onPress:()=> {this.starList()}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isSynced */ false, disabledPressAction: ()=>{this.setState({syncModal: true})}, isActive: this.state.isStarred},
                         {text: 'Edit', icon:  EditIcon, onPress:()=>{navigateToScreen(

@@ -5,6 +5,7 @@ import CaretIcon from './caretIcon';
 import CopyIcon from './copyIcon';
 import CurrencySwapIcon from './currencySwapIcon';
 import EditIcon from './editIcon';
+import ImportIcon from './importIcon';
 import MenuHalfedIcon from './menuHalfedIcon';
 import MenuIcon from './menuIcon';
 import ShareIcon from './shareIcon';
@@ -21,6 +22,7 @@ CaretIcon,
 CopyIcon,
 CurrencySwapIcon,
 EditIcon,
+ImportIcon,
 MenuHalfedIcon,
 MenuIcon,
 ShareIcon,

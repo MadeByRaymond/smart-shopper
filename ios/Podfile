@@ -28,6 +28,10 @@ target 'SmartShopper' do
 
   pod 'react-native-in-app-review', :path => '../node_modules/react-native-in-app-review'
 
+  pod 'RNFS', :path => '../node_modules/react-native-fs'
+
+  pod 'RNShare', :path => '../node_modules/react-native-share'
+
   target 'SmartShopperTests' do
     inherit! :complete
     # Pods for testing
