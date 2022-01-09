@@ -27,9 +27,9 @@ const whatToReturn = (props) =>{
             return(
                 <View style={[styles.button, styles.multiButtonWrapper, {backgroundColor: props.theme.primaryColor}]}>  
                     {props.contents.map((item, i)=>(
-                        <OpacityLinks onPress={item.disabledState ? item.disabledPressAction : item.onPress} onLongPress={item.onHold}  key={i}>
+                        <OpacityLinks hitSlop={{top: 20, bottom: 20, left: 20, right: 20}} onPress={item.disabledState ? item.disabledPressAction : item.onPress} onLongPress={item.onHold}  key={i}>
                             <View style={{alignItems: 'center', opacity: item.disabledState ? 0.6 : 1}}>
-                                <View><item.icon height={35} width={35} ></item.icon></View>
+                                <View><item.icon height={35} width={35} active={item.isActive ? item.isActive : false} fillColor={'#fff'} ></item.icon></View>
                                 {props.showButtonLabels ? <View><Text style={styles.multiButtonText}>{item.text}</Text></View> : null}
                             </View>
                         </OpacityLinks>
@@ -59,9 +59,9 @@ const FloatingButtonView = (props) => {
             <LinearGradient 
                 colors={[(props.colors.background + '00'), props.colors.background, props.colors.background]}
                 locations={[0.05,0.2,1]} 
-                style={[styles.container,{paddingBottom: props.type == 'multiButtons' ? 30 : 40}]}
+                style={[styles.container,{paddingBottom: props.type == 'multiButtons' ? 30 : 35}]}
             >
-                <Shadow style={[styles.buttonShadow, {shadowColor: props.theme.primaryColor}]}>
+                <Shadow style={[styles.buttonShadow, {shadowColor: props.theme.primaryColor, shadowOpacity: props?.colorScheme == 'dark' ? 0.25 : 0.4}]}>
                     {whatToReturn(props)}
                     
                 </Shadow>
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     },
     buttonShadow:{
         shadowOffset: {width: 0, height: 6},
-        shadowOpacity: 0.55,
+        shadowOpacity: 0.4,
         shadowColor: "#C06A46",
         shadowRadius: 18,
         borderRadius: 1000,

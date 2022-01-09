@@ -102,6 +102,7 @@ const styles = StyleSheet.create({
     container:{
         flexDirection: 'row',
         justifyContent: 'space-between',
+        alignItems: 'center',
         paddingBottom: 20
     },
     noBackTitle:{

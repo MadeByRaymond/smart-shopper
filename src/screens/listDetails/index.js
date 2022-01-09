@@ -23,7 +23,7 @@ import {ListSchemas} from '../../realm-storage/schemas'
 
 // Includes 
 import {updateComponentAppearance, navigateToScreen, onShare, randomString} from '../../includes/functions';
-import {dWidth, realmStorePath, currencies,featureImages, mongoClientCluster} from '../../includes/variables';
+import {dWidth, realmStorePath, currencies,featureImages, mongoClientCluster, asyncStores} from '../../includes/variables';
 
 class ListDetails extends Component {
 
@@ -41,9 +41,10 @@ class ListDetails extends Component {
         // isOwner: this.props.isOwner,
         isStarred: false,
         showPrice: false,
+        starredLists: [],
 
         listDetails: {
-            _id: '',
+            _id: this.props.listId,
             _partition : '',
             // synced: false,
             name: '',
@@ -84,7 +85,6 @@ class ListDetails extends Component {
 
     componentDidMount(){
         // updateComponentAppearance(this.props);
-        console.log('ffff');
 
         this.getLocalListDetails().then(()=>{
             this.state.listDetails.items.map(item => {
@@ -92,6 +92,27 @@ class ListDetails extends Component {
                 this.forceUpdate()
             })
         });
+
+        AsyncStorage.getItem(asyncStores.starredLists).then(res => {
+            let starredLists = [];
+            
+            try {
+                starredLists = JSON.parse(res);
+
+                if (!Array.isArray(starredLists)){
+                    starredLists = [];
+                }
+            } catch (error) {
+                starredLists = [];
+            }
+            
+            this.setState({
+                starredLists,
+                isStarred: starredLists.includes(this.state.listDetails._id)
+            })
+        }).catch(e => {
+            AsyncStorage.setItem(asyncStores.starredLists, this.state.starredLists)
+        })
     }
 
     componentDidUpdate(prevProps){
@@ -139,7 +160,7 @@ class ListDetails extends Component {
                 changes.newModifications.forEach((index) => {
                     let modifiedList = lists[index];
                     // console.log(modifiedTask);
-                    console.log(`modifiedTask: ${JSON.stringify(modifiedList, null, 2)}`);
+                    // if(__DEV__) console.log(`modifiedTask: ${JSON.stringify(modifiedList, null, 2)}`);
                     // if(!modifiedList.synced){
                         this.setState({
                             // isSynced: modifiedList.synced,
@@ -157,7 +178,7 @@ class ListDetails extends Component {
                 listDetails: this.storedListDetails
             });
         } catch (error) {
-            console.log('Error ==> ',error);
+            if(__DEV__) console.log('Error ==> ',error);
         }
     }
 
@@ -170,7 +191,7 @@ class ListDetails extends Component {
             [itemKey]: value
         }
 
-        console.log(JSON.stringify(itemsArray, null, 2));
+        // if(__DEV__) console.log(JSON.stringify(itemsArray, null, 2));
 
         this.realm.write(() => {
             this.storedListDetails.items = JSON.parse(JSON.stringify(itemsArray));
@@ -191,7 +212,29 @@ class ListDetails extends Component {
     }
 
     starList = ()=>{
-        this.setState((prevState)=> ({isStarred : !prevState.isStarred}))
+        if (this.state.isStarred){
+            let starredLists = []
+            starredLists.push(...this.state.starredLists)
+            let newList = starredLists.filter((val) => (val !== this.state.listDetails._id))
+            // console.log('NewList ==> ', newList);
+            AsyncStorage.setItem(asyncStores.starredLists, JSON.stringify(newList), ()=>{
+                this.props.refreshView()
+                this.setState({
+                    starredLists: newList,
+                    isStarred: false
+                })
+            })
+        }else{
+            AsyncStorage.setItem(asyncStores.starredLists, JSON.stringify([...this.state.starredLists,this.state.listDetails._id]), ()=>{
+                this.props.refreshView()
+                this.setState({
+                    starredLists: [...this.state.starredLists,this.state.listDetails._id],
+                    isStarred: true
+                })
+            })
+        }
+        // AsyncStorage.setItem(asyncStores.starredLists, )
+        // this.setState((prevState)=> ({isStarred : !prevState.isStarred}))
     }
 
 
@@ -262,7 +305,7 @@ class ListDetails extends Component {
 
                                     await this.syncListToRealm()
                                 }catch(error){
-                                    console.log('Error Syncing List ---> ', error);
+                                    if(__DEV__) console.log('Error Syncing List ---> ', error);
                                     this.realm.write(() => {
                                         this.storedListDetails.synced = false;
                                         this.storedListDetails.dateModified = new Date();
@@ -345,7 +388,7 @@ class ListDetails extends Component {
                             .then((success) => {
                                 // console.log('FILE WRITTEN!');
                                 // console.log('Result: ', filePath);
-                                onShare('Share your list', `Here's my list “${this.state.listDetails.name}” on SmartShopper. Get the app on android now: https://play.google.com/store/apps/details?id=com.madebyraymond.smartshopper`, 'Check out my SmartShopper list', 'file://' + filePath)
+                                onShare('Share your list', `Here's my list “${this.state.listDetails.name}” on SmartShopper. Get the app on android now: https://play.google.com/store/apps/details?id=com.madebyraymond.smartshopper`, 'Check out my SmartShopper list', 'file://' + filePath, true)
                                 .catch(e =>{
                                     if(__DEV__) console.log(e);
                                 })
@@ -397,7 +440,15 @@ class ListDetails extends Component {
                                     // isSynced: this.state.isSynced,
                                 }
                             )}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isOwner */ false, disabledPressAction: ()=>{/* Do Nothing */}},
-                        {text: 'Delete', icon: TrashIcon, onPress:()=>{
+                        {text: 'Delete', icon: TrashIcon, onPress: async ()=>{
+                                if(this.state.isStarred){
+                                    let starredLists = []
+                                    starredLists.push(...this.state.starredLists)
+                                    let newList = starredLists.filter((val) => (val !== this.state.listDetails._id))
+                                    // console.log('NewList ==> ', newList);
+                                    await AsyncStorage.setItem(asyncStores.starredLists, JSON.stringify(newList))
+                                }
+
                                 this.realm.write(() => {
                                     // Delete the task from the realm.
                                     this.realm.delete(this.storedListDetails)
@@ -419,6 +470,7 @@ class ListDetails extends Component {
                     showButtonLabels={this.state.showButtonLabels}
                     theme={this.props.theme} 
                     colors={activeColorScheme} 
+                    colorScheme = {this.props.colorScheme}
                 />
             </ActionsModal>
         </View>

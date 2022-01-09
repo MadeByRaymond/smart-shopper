@@ -20,7 +20,7 @@ export default function spalshScreen(props) {
     return (
         <View style={[styles.splashScreenContainer, {backgroundColor: colorScheme[activeColorScheme == 'dark' ? 'dark' : 'light'].background }]}>
             <LottieView 
-                source={require('../../assets/lottie/lf30_editor_hfam1tlq.json')} 
+                source={require('../../assets/lottie/splash_screen_edited.json')} 
                 autoPlay 
                 loop = {false}
                 style={styles.splashScreenAnimation}

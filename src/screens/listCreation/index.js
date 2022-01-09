@@ -19,7 +19,7 @@ import CheckedIcon from '../../vectors/checkIcon/checkedIcon'
 import {ListSchemas} from '../../realm-storage/schemas'
 
 // Includes 
-import {updateStatusBarAppearance} from '../../includes/functions';
+import {updateComponentAppearance} from '../../includes/functions';
 import {currencies, unitSymbols, customItemId, asyncStores, featureImages, realmStorePath, dHeight, dWidth} from '../../includes/variables';
 
 export class ListCreation extends Component {
@@ -28,6 +28,10 @@ export class ListCreation extends Component {
         showCurrencyModal: false,
         currencyModalOpenedOnce: false,
         unitsModalOpenedOnce: false,
+        
+        showError: false,
+        errorText: '',
+
         itemCount: 1,
         categoryCount: 1,
 
@@ -69,7 +73,7 @@ export class ListCreation extends Component {
     }
 
     componentDidMount(){ 
-        updateStatusBarAppearance(this.props);
+        // updateComponentAppearance(this.props);
 
         AsyncStorage.getItem(asyncStores.currency).then(val => {
             this.setState({
@@ -84,7 +88,7 @@ export class ListCreation extends Component {
 
     componentDidUpdate(prevProps){
         if(prevProps.colorScheme != this.props.colorScheme){
-            updateStatusBarAppearance(this.props);
+            updateComponentAppearance(this.props);
         }
     }
 
@@ -133,11 +137,11 @@ export class ListCreation extends Component {
                 
             })
 
-            realm.close();
+            // realm.close();
             this.props.refreshView();
             Navigation.pop(this.props.componentId);
         }).catch(e => {
-            console.log(e);
+            if(__DEV__) console.log(e);
         })
     }
 
@@ -163,11 +167,11 @@ export class ListCreation extends Component {
                 storedListDetails.lastActivityLog = `Updated List Details on ${new Date()}`;
             })
 
-            realm.close();
+            // realm.close();
             this.props.refreshView();
             Navigation.pop(this.props.componentId);
         }).catch(e => {
-            console.log(e);
+            if(__DEV__) console.log(e);
         })
     }
 
@@ -386,141 +390,6 @@ export class ListCreation extends Component {
                 </View>
             );
         })
-        // for (const category of this.state.listItemCategories) {
-        //     for (const item of this.state.listItems) {
-        //         if(item.category.trim() == category.categoryId.trim()){
-        //             fff = fff + (<View>
-        //                 <View style={styles.categoryWrapper}>
-        //                     <TextInput 
-        //                         value={'Dairy'}
-        //                         maxLength={30}
-    
-        //                         style={[styles.listCategoryInput, {color: activeColorScheme.subtext_1}]}
-        //                     />
-        //                 </View>
-        //                 <View style={styles.listItemsWrapper}>
-        //                     <View style={styles.listItemContainer}>
-        //                         <View style={styles.listItemRight}>
-        //                             <View>
-        //                                 <TextInput
-        //                                     value= {'Milk'}
-        //                                     maxLength= {20}
-    
-        //                                     style={[styles.listItemTitle, {color: activeColorScheme.textPrimary}]}
-        //                                 />
-        //                             </View>
-        //                             <View style={styles.listItemPriceWrapper}>
-        //                                 <Text style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}>{this.state.currency.symbol}</Text>
-        //                                 <TextInput
-        //                                     value= {'20'}
-        //                                     maxLength={12}
-        //                                     keyboardType= {'numeric'}
-                                            
-    
-        //                                     style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}
-        //                                 />
-        //                             </View>
-        //                         </View>
-        //                         <View style={styles.listItemLeft}>
-        //                             <View style={styles.listItemUnitsWrapper}>
-        //                                 <View style={styles.listItemUnitsBorder}>
-        //                                     <TextInput 
-        //                                         value={'29'}
-        //                                         maxLength= {4}
-        //                                         keyboardType= {'numeric'}
-    
-        //                                         style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
-        //                                     />
-        //                                 </View>
-        //                                 <View>
-        //                                     <Text
-        //                                         style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
-        //                                     >gal</Text>
-        //                                 </View>
-        //                             </View>
-        //                             <View style={styles.trashButtonWrapper}>
-        //                                 <TouchableOSSpecific onPress={()=> {/*alert('ff')*/}}>
-        //                                     <View style={[styles.trashButton, {backgroundColor: this.props.theme.primaryColor}]}>
-        //                                         <TrashIcon 
-        //                                             height={20}
-        //                                         />
-        //                                     </View>    
-        //                                 </TouchableOSSpecific>
-        //                             </View>
-        //                         </View>
-        //                     </View>
-        //                     <View style={styles.listItemContainer}>
-        //                         <View style={styles.listItemRight}>
-        //                             <View>
-        //                                 <TextInput
-        //                                     value= {'Milk'}
-        //                                     maxLength= {20}
-    
-        //                                     style={[styles.listItemTitle, {color: activeColorScheme.textPrimary}]}
-        //                                 />
-        //                             </View>
-        //                             <View style={styles.listItemPriceWrapper}>
-        //                                 <Text style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}>{this.state.currency.symbol}</Text>
-        //                                 <TextInput
-        //                                     value= {'20'}
-        //                                     maxLength={12}
-        //                                     keyboardType= {'numeric'}
-                                            
-    
-        //                                     style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}
-        //                                 />
-        //                             </View>
-        //                         </View>
-        //                         <View style={styles.listItemLeft}>
-        //                             <View style={styles.listItemUnitsWrapper}>
-        //                                 <View style={styles.listItemUnitsBorder}>
-        //                                     <TextInput 
-        //                                         value={'29'}
-        //                                         maxLength= {4}
-        //                                         keyboardType= {'numeric'}
-    
-        //                                         style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
-        //                                     />
-        //                                 </View>
-        //                                 <View>
-        //                                     <Text
-        //                                         style={[styles.listItemUnitsInput, {color: activeColorScheme.textPrimary}]}
-        //                                     >gal</Text>
-        //                                 </View>
-        //                             </View>
-        //                             <View style={styles.trashButtonWrapper}>
-        //                                 <TouchableOSSpecific onPress={()=> {/*alert('ff')*/}}>
-        //                                     <View style={[styles.trashButton, {backgroundColor: this.props.theme.primaryColor}]}>
-        //                                         <TrashIcon 
-        //                                             height={20}
-        //                                         />
-        //                                     </View>    
-        //                                 </TouchableOSSpecific>
-        //                             </View>
-        //                         </View>
-        //                     </View>
-        //                 </View>
-                        
-        //                 <View>
-        //                     <OpacityLinks activeOpacity={0.95}>
-        //                         <View style={[styles.addButton, {borderColor: this.props.theme.primaryColor, backgroundColor: this.props.colorScheme == 'dark' ? this.props.theme.secondaryColor : activeColorScheme.background}]}>
-        //                             <View style={styles.addButtonIcon}>
-        //                                 <AddIcon 
-        //                                     theme={this.props.theme}
-        //                                 />
-        //                             </View>
-        //                             <View><Text style={[styles.addButtonText, {color: this.props.theme.primaryColor}]}>Add Item</Text></View>
-        //                         </View>
-        //                     </OpacityLinks>
-        //                 </View>
-        //             </View>)
-        //         }
-                
-        //     }
-        // }
-
-        // console.log(fff);
-        // return fff
     }
 
     renderModals= (activeColorScheme, activeUnitsSymbol) => (
@@ -637,10 +506,12 @@ export class ListCreation extends Component {
                 listTitle: listDetails.name,
                 listItemCategories:listDetails.categories,
                 listItems:listDetails.items
-            }, ()=> realm.close())
+            }
+            // , ()=> realm.close()
+            )
             
         }).catch(e => {
-            console.log(e);
+            if(__DEV__) console.log(e);
         })
     }
 
@@ -658,6 +529,8 @@ export class ListCreation extends Component {
 
                     componentId = {this.props.componentId}
                  />
+                
+                {this.state.showError ? <View style={styles.errorTextWrapper}><Text style={styles.errorText}>{this.state.errorText}</Text></View> : null}
 
                 {this.renderModals(activeColorScheme, activeUnitsSymbol)}
                 
@@ -671,7 +544,7 @@ export class ListCreation extends Component {
                         <View>
                             <TextInput 
                                 value={this.state.listTitle}
-                                onChangeText = {(val) => this.setState({listTitle: this.trimInputVal(val)})}
+                                onChangeText = {(val) => this.setState({listTitle: this.trimInputVal(val), showError: false, errorText: ''})}
                                 maxLength={30}
                                 autoCapitalize={'words'}
                                 placeholder={'Enter List Title'}
@@ -695,11 +568,15 @@ export class ListCreation extends Component {
                     }} 
                     theme={this.props.theme} 
                     colors={activeColorScheme} 
+                    colorScheme = {this.props.colorScheme}
                     onPress= {()=>{
                         if(typeof this.state.listTitle !== 'undefined' && this.state.listTitle && this.state.listTitle.trim() !== ''){
                             this.props.showAsEdit ? this.updateListDetails() : this.createList();
                         }else{
-                            
+                            this.setState({
+                                showError: true,
+                                errorText: 'Ensure no fields are missing then try again.'
+                            })
                         }
                     }} 
 
@@ -891,6 +768,23 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: -4,
         right: -4
+    },
+
+    errorTextWrapper:{
+        backgroundColor: '#FEE2DB',
+        borderStyle: 'solid',
+        borderTopColor: '#F9C2C1',
+        borderTopWidth: 1,
+        marginTop: -10,
+        marginBottom: 30,
+        marginHorizontal: -16,
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+    },
+    errorText:{
+        fontFamily: 'Gilroy-Medium',
+        fontSize: 15,
+        color: '#E63950',
     }
 })
 

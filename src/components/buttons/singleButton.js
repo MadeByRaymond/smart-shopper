@@ -6,7 +6,7 @@ import {TouchableOSSpecific} from '../links';
 
 export default function SingleButton(props) {
     return (
-        <Shadow style={[styles.buttonShadow, {shadowColor: props.theme.primaryColor, shadowOpacity: props.colorScheme == 'dark' ? 0.35 : 0.55}]}>
+        <Shadow style={[styles.buttonShadow, {shadowColor: props.theme.primaryColor, shadowOpacity: props.colorScheme == 'dark' ? 0.25 : 0.4}]}>
             <View style={styles.buttonRadius}>
                 <TouchableOSSpecific onPress={props.onPress} >
                     <View style={[styles.button, {backgroundColor: props.theme.primaryColor}]}>
@@ -24,7 +24,7 @@ export default function SingleButton(props) {
 const styles = StyleSheet.create({
     buttonShadow:{
         shadowOffset: {width: 0, height: 6},
-        shadowOpacity: 0.55,
+        shadowOpacity: 0.4,
         shadowColor: "#C06A46",
         shadowRadius: 18,
         borderRadius: 1000,

@@ -177,6 +177,7 @@ export class Settings extends Component {
                         <View>
                             <View>
                                 <Image 
+                                    defaultSource = {require('../../assets/img/logo-placeholder.png')}
                                     source={{uri: this.state.charityOrg.orgLogo}}
                                     style={styles.charityModalLogo}
                                 />
@@ -252,11 +253,13 @@ export class Settings extends Component {
 
                     <OpacityLinks onPress={()=>{onShare('Invite a friend via...', `Hey, 
 
-Check out SmartShopper. I use it to create and keep track of my shopping list. It's awesome!!!
+Check out SmartShopper. I use it to create shopping list and other smart lists. It's awesome!!!
 
-Get it now on android free.
-https://madebyraymond.herokuapp.com/?redirecttoapp=smartshopperapp
-                                `, 'Check out the SmartShopper app.')}}>
+Get it now on android free:
+https://play.google.com/store/apps/details?id=com.madebyraymond.smartshopper
+                                `, 'Check out the SmartShopper app.').catch(e =>{
+                                    if (__DEV__) console.log(e)
+                                })}}>
                         <View style={[globalStyles.listItem, {borderBottomColor: activeColorScheme.listBorder}]}>
                             <View style={globalStyles.listItemLeft}>
                                 <View style={globalStyles.listItemTitleWrapper}><Text style={[globalStyles.listItemTitle, {color: activeColorScheme.textPrimary}]}>Invite a friend</Text></View>

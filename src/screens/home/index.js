@@ -26,35 +26,42 @@ import DocumentPicker, {
 // Components 
 import Header from '../../components/header'
 import FloatingButtonView from '../../components/buttons/floatingButtonView'
+import Button from '../../components/buttons/singleButton'
 import ShoppingLists from '../../components/home/shoppingLists'
 import {colorScheme, globalStyles} from '../../components/uiComponents'
 
 import {ListSchemas, OldListSchemas} from '../../realm-storage/schemas'
 
 // Includes 
-import {updateStatusBarAppearance, navigateToScreen} from '../../includes/functions';
-import {dWidth, dHeight, realmStorePath} from '../../includes/variables';
+import {updateComponentAppearance, navigateToScreen} from '../../includes/functions';
+import {dWidth, dHeight, realmStorePath, asyncStores} from '../../includes/variables';
 import { OpacityLinks } from '../../components/links';
 
 class Home extends Component {
     state={
-        color: '#000000',
-        text: this.props.colorScheme,
-        items: true,
-
+        // color: '#000000',
+        // text: this.props.colorScheme,
+        // items: true,
         shoppingLists : [],
-        starredList: [],
+        starredLists: [],
+        importFiles: [],
+        importContent: null,
+        isValidImport: false,
+        invalidReason: null,
+
+        importModal: false,
+        showImportAction: false,
     }
 
     componentDidMount(){
-        updateStatusBarAppearance(this.props);
-
+        updateComponentAppearance(this.props);
         this.getListsFromStore();
+        this._loadFiles();
     }
 
     componentDidUpdate(prevProps){
         if(prevProps.colorScheme != this.props.colorScheme){
-            updateStatusBarAppearance(this.props);
+            updateComponentAppearance(this.props);
         }
     }
 
@@ -68,35 +75,45 @@ class Home extends Component {
                 ListSchemas.listItemsCategoriesSchema,
                 ListSchemas.currencySchema
             ]
-        }).then(realm => {
+        }).then(async(realm) => {
             let shoppingLists = realm.objects('list').sorted("dateCreated",true);
+            let starredLists = [];
+
+            try {
+                starredLists = JSON.parse(await AsyncStorage.getItem(asyncStores.starredLists));
+                
+                if(!Array.isArray(starredLists)) starredLists = [];
+            } catch (error) {
+                starredLists = [];
+            }
             
             shoppingLists.addListener((list,changes)=>{
                 // Update UI in response to inserted objects
-                changes.insertions.forEach((index) => {
-                    let insertedLists = list[index];
+                // changes.insertions.forEach((index) => {
+                //     let insertedLists = list[index];
 
-                    console.log(
-                      `insertedList: ${JSON.stringify(insertedLists, null, 2)}`
-                    );
-                });
+                //     console.log(
+                //       `insertedList: ${JSON.stringify(insertedLists, null, 2)}`
+                //     );
+                // });
 
-                console.log('Insertions ==> ', changes);
+                // console.log('Insertions ==> ', changes);
             });
 
-            this.setState({shoppingLists})
+            // console.log('Starred lists', starredLists);
+
+            this.setState({shoppingLists, starredLists})
             // realm.close();
         }).catch(e => {
-            console.log(e);
+            if(__DEV__) console.log(e);
         })
     }
 
     renderView = (activeColorScheme) =>{
-        let renderView = <View></View>
+        let renderView;
         
-        if ((!this.state.shoppingLists || this.state.shoppingLists.length < 1) && (!this.state.starredList || this.state.starredList.length < 1)) {
+        if ((!this.state.shoppingLists || this.state.shoppingLists.length < 1)) {
             let ArrowIcon = require('../../vectors/generalIcons').ArrowIcon;
-            // let path = `../../assets/lottie/51382-astronaut-light-theme.json`;
             renderView = (<View style={styles.emptyStateWrapper}>
                 <LottieView 
                     source={require('../../assets/lottie/astronaout.json')} 
@@ -111,7 +128,7 @@ class Home extends Component {
                     })
                 }}>
                     <View style={styles.emptyStateTextWrapper}>
-                        <View><Text style={[styles.emptyStateText, {color: this.props.colorScheme == 'dark' ? "#C6DAFF" : this.props.theme.primaryColor}]}>Let's Create a New List</Text></View>
+                        <View><Text style={[styles.emptyStateText, {color: activeColorScheme.noInfoText }]}>Let's Create a New List</Text></View>
                         <View><ArrowIcon width={38} height={38} colorScheme={this.props.colorScheme} theme={this.props.theme} /></View>
                     </View> 
                 </OpacityLinks>
@@ -123,17 +140,37 @@ class Home extends Component {
                     contentContainerStyle={globalStyles.scrollViewContainer}
                     showsVerticalScrollIndicator={false}
                 >
-                    {(!this.state.starredList || this.state.starredList.length < 1) ? null : <View><Text style={[globalStyles.subtext, {color: activeColorScheme.subtext_1}]}>Your Starred Lists</Text></View>}
+                    {(!this.state.starredLists || this.state.starredLists.length < 1) ? null : <View><Text style={[globalStyles.subtext, {color: activeColorScheme.subtext_1}]}>Your Starred Lists</Text></View>}
+                    
+                    {this.state.shoppingLists.map((item, key) => {
+                      return this.state.starredLists.includes(item._id) ? (
+                        <ShoppingLists 
+                            key={key + 1000}
+                            colors={activeColorScheme} 
+                            starred={true}
+                            newScreenProps={{componentId: this.props.componentId}} 
+                            itemsCount = {item.items.length}
+                            featureImage = {item.featureImage}
+                            listName = {item.name}
+                            listId = {item._id}
+                            loadOnView= {item.synced}
+                            // isSynced= {item.synced}
+                            // isOwner = {item.ownerId == getUniqueId()}
+                            refreshView= {() => this.getListsFromStore()}
+                        />
+                      ) : null
+                    })}
 
                     {/* <ShoppingLists colors={activeColorScheme} starred={true} newScreenProps={{componentId: this.props.componentId}} /> */}
 
-                    {(!this.state.shoppingLists || this.state.shoppingLists.length < 1) ? null : <View><Text style={[globalStyles.subtext, {color: activeColorScheme.subtext_1}]}>Recently Created</Text></View>}
+                    {(!this.state.shoppingLists || this.state.shoppingLists.length < 1 || this.state.shoppingLists.length == this.state.starredLists.length) ? null : <View><Text style={[globalStyles.subtext, {color: activeColorScheme.subtext_1}]}>Recently Created</Text></View>}
 
                     {/* <ShoppingLists colors={activeColorScheme} newScreenProps={{componentId: this.props.componentId}} />
                     <ShoppingLists colors={activeColorScheme} newScreenProps={{componentId: this.props.componentId}} />
                     <ShoppingLists colors={activeColorScheme} newScreenProps={{componentId: this.props.componentId}} /> */}
 
-                    {this.state.shoppingLists.map((item, key) => (
+                    {this.state.shoppingLists.map((item, key) => {
+                      return this.state.starredLists.includes(item._id) ? null : (
                         <ShoppingLists 
                             key={key}
                             colors={activeColorScheme} 
@@ -147,7 +184,8 @@ class Home extends Component {
                             // isOwner = {item.ownerId == getUniqueId()}
                             refreshView= {() => this.getListsFromStore()}
                         />
-                    ))}
+                      )
+                    })}
 
             </ScrollView>)
         }

@@ -10,7 +10,10 @@ export const asyncStores = {
     theme: 'smartShopper:appStorage:theme',
     colorScheme: 'smartShopper:appStorage:colorScheme',
     currency: 'smartShopper:appStorage:currency',
-    skipOnboarding: 'smartShopper:appStorage:skipOnboarding'
+    skipOnboarding: 'smartShopper:appStorage:skipOnboarding',
+    firstImportClick: 'smartShopper:appStorage:firstImportClick',
+    starredLists: 'smartShopper:appStorage:starredLists',
+    appOpenCount: 'smartShopper:appStorage:appOpenCount'
 }
 
 export const displayModes = [
