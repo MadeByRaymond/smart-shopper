@@ -5,7 +5,11 @@ import { Navigation } from "react-native-navigation";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Provider } from 'react-redux';
 import InAppReview from 'react-native-in-app-review';
-import InAppUpdates from 'sp-react-native-in-app-updates';
+import SpInAppUpdates, {
+  NeedsUpdateResponse,
+  IAUUpdateKind,
+  StartUpdateOptions,
+} from 'sp-react-native-in-app-updates';
 
 import ProviderConfig from './src/store/providerConfig';
 import ReduxStore from './src/store/storeConfig';
@@ -41,56 +45,41 @@ Navigation.registerComponent('com.mbr.smartshopper.screen.listDetails', () => (p
 Navigation.registerComponent('com.mbr.smartshopper.screen.settings', () => (props) => ProviderConfig(props, Settings), () => Settings);
 
 
-// HANDLING DEEP LINKING 
-// Deep Linking Launching Quit App Handler 
-// Linking.getInitialURL().then((url) => {
-//   if(url.toLowerCase().includes('/wishlink/')){
-//     let wishlist_code = url.substring(url.lastIndexOf('/wishlink/') + 10);
+const inAppUpdates = new SpInAppUpdates(
+  false // isDebug
+);
+// curVersion is optional if you don't provide it will automatically take from the app using react-native-device-info
+inAppUpdates.checkNeedsUpdate({ curVersion: '1.0.0' }).then((result) => {
+  if (result.shouldUpdate) {
+    let updateOptions = {};
+    if (Platform.OS === 'android') {
+      // android only, on iOS the user will be promped to go to your app store page
+      updateOptions = {
+        updateType: IAUUpdateKind.FLEXIBLE,
+      };
+    }
+    inAppUpdates.startUpdate(updateOptions); // https://github.com/SudoPlz/sp-react-native-in-app-updates/blob/master/src/types.ts#L78
+  }else {
+    throw 'Update not needed'
+  }
+}).catch((e) =>{
+    if(__DEV__) console.log("InApp Update Error ==> ", e);
+}).finally(async () =>{
+  if (InAppReview.isAvailable()) {
+    let openCount = parseInt(await AsyncStorage.getItem(asyncStores.appOpenCount))
     
-//     if(wishlist_code.length == 6){
-//       global.launchWithCode = wishlist_code;
-//     }
-//   }
-// }).catch((e)=>{});
-
-// Deep Linking Launching Background App Handler 
-// Linking.addEventListener('url', ({url}) =>{
-//   if(url.toLowerCase().includes('/wishlink/')){
-//     let wishlist_code = url.substring(url.lastIndexOf('/wishlink/') + 10);
+    openCount = (typeof openCount == 'number') ? isNaN(openCount) ? 0 : openCount : 0;
     
-//     if(
-//       wishlist_code.length == 6
-//       && typeof global.activeComponentId !== 'undefined' 
-//       && global.activeComponentId !== null 
-//       && (typeof global.activeComponentId == 'string' && global.activeComponentId.trim() !== '')
-//     ){
-//       goToViewWishlistScreen(global.activeComponentId, wishlist_code)
-//     }
-//   }
-// });
+    if ((openCount == 4 || openCount == 16 || openCount == 64 || openCount == 256 || openCount == 1024 || openCount == 4096)) {
+      InAppReview.RequestInAppReview()
+      .catch((e) => {
+        if(__DEV__) console.log("InApp Review Error ==> ", e);
+      })
+    }
 
-// // Add Appearance Change Listener 
-// Appearance.addChangeListener(()=>{
-//   AsyncStorage.getItem(asyncStores.colorScheme).then((result) => {
-//     result == 'system' ? ReduxStore.dispatch(setColorScheme(result)) : null
-//   }).catch((e) => {/* Do Nothing */})
-// })
-
-// AsyncStorage.getItem(asyncStores.colorScheme).then((result) => {
-//   ReduxStore.dispatch(setColorScheme(result))
-// }).catch((e) => {
-//   AsyncStorage.setItem(asyncStores.colorScheme, 'light');
-//   ReduxStore.dispatch(setColorScheme('light'))
-// })
-
-
-// // Set App Active Theme 
-// AsyncStorage.getItem(asyncStores.theme).then((result) => {
-//   ReduxStore.dispatch(setTheme(result))
-// }).catch((e) => {
-//   AsyncStorage.setItem(asyncStores.theme, Object.keys(theme)[0]);
-//   ReduxStore.dispatch(setTheme(Object.keys(theme)[0]))
-// })
+    await AsyncStorage.setItem(asyncStores.appOpenCount, `${openCount + 1}`)
+  }
+});
 
 
 let startupFunctions = async() => {
