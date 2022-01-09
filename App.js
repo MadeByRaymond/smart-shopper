@@ -14,7 +14,7 @@ import {asyncStores, currencies} from './src/includes/variables';
 import {theme} from './src/components/uiComponents';
 
 // SPLASH SCREENS IMPORTS
-// import Splash from "./src/screens/splashScreen/splashScreen";
+import Splash from "./src/screens/splash/index";
 
 // ONBOARDING SCREENS 
 // import OnBoarding from "./src/screens/onBoarding/onboarding";
@@ -29,7 +29,7 @@ import Settings from "./src/screens/settings";
 // Navigation.registerComponentWithRedux('com.lysts.screen.auth', () => Auth, Provider, store);
 
 // SPLASH SCREEN
-// Navigation.registerComponent('com.lysts.screen.splash', () => Splash);
+Navigation.registerComponent('com.mbr.smartshopper.screen.splash', () => Splash);
 
 // ONBOARDING SCREEN
 // Navigation.registerComponent('com.lysts.screen.onboarding', () => OnBoarding);
@@ -139,23 +139,23 @@ let startupFunctions = async() => {
 
 
 // APP ROOTS 
-// export const splashRoot = {
-//   root: {
-//     component: {
-//       name: 'com.lysts.screen.splash',
-//       options : {
-//         statusBar: {
-//           backgroundColor: 'transparent',
-//           drawBehind: true,
-//           translucent: true,
-//           animate: true,
-//           blur: true,
-//           style: 'dark'
-//         }
-//       }
-//     }
-//   }
-// };
+export const splashRoot = {
+  root: {
+    component: {
+      name: 'com.mbr.smartshopper.screen.splash',
+      options : {
+        statusBar: {
+          backgroundColor: 'transparent',
+          drawBehind: true,
+          translucent: true,
+          animate: true,
+          blur: true,
+          style: 'dark'
+        }
+      }
+    }
+  }
+};
 
 // export const onBoardingRoot = {
 //   root: {
@@ -228,24 +228,24 @@ Navigation.setDefaultOptions({
   }
 });
 
-export const getRoot = async () =>{
-  try {
-    return (await AsyncStorage.getItem(asyncStores.skipOnboarding) == "true") ? mainRoot : mainRoot;
-  } catch(e) {
-    // return onBoardingRoot;
-    return mainRoot;
-  }
-}
+// export const getRoot = async () =>{
+//   try {
+//     return (await AsyncStorage.getItem(asyncStores.skipOnboarding) == "true") ? mainRoot : mainRoot;
+//   } catch(e) {
+//     // return onBoardingRoot;
+//     return mainRoot;
+//   }
+// }
 
 
 Navigation.events().registerAppLaunchedListener(async() => {
   try {
     await startupFunctions();
   } catch (error) {
-    console.log(e);
+    if(__DEV__) console.log(e);
   } finally {
     //  Navigation.setRoot(await isLoggedIn() ? mainRoot : loginRoot);
     //  Navigation.setRoot(await getRoot());
-    Navigation.setRoot(mainRoot);
+    Navigation.setRoot(splashRoot);
   }
 });
