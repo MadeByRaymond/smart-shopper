@@ -1,11 +1,8 @@
-import React, {useEffect, useState} from 'react'
+import React, {useState} from 'react'
 import { StyleSheet, View, Text, TextInput } from 'react-native'
 import Modal from 'react-native-modal'
-import LinearGradient from 'react-native-linear-gradient';
-import Shadow from 'react-native-drop-shadow';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import {theme} from '../uiComponents'
 import {OpacityLinks, TouchableOSSpecific} from '../links'
 import CheckedIcon from '../../vectors/checkIcon/checkedIcon'
 
@@ -21,13 +18,6 @@ let renderItems = (itemsType, activeItem, setItem, customItem, setCustomItem, th
     return (<View>
         {items.map(item => (
             <OpacityLinks onPress={() => {
-                // AsyncStorage.setItem(asyncStores.currency, JSON.stringify({
-                //     id: item.id,
-                //     symbol: item.symbol
-                // })).then(() => {
-                //     setCustomCurrency('');
-                //     setCurrency(`${item.name} (${item.symbol})`, item.id);
-                // }).catch((e)=>{/* Do Nothing */});
                 setItem({
                     id:item.id,
                     name:item.name,
@@ -58,14 +48,6 @@ let renderItems = (itemsType, activeItem, setItem, customItem, setCustomItem, th
             />
         </View>
         {customItem.trim() != '' ? (<TouchableOSSpecific onPress={()=>{
-            // AsyncStorage.setItem(asyncStores.currency, JSON.stringify({
-            //     id: customCurrencyId,
-            //     symbol: customCurrency
-            // })).then(() => {
-            //     setCurrency(customCurrency,customCurrencyId);
-            //     closeFunction();
-            // }).catch((e)=>{/* Do Nothing */});
-
             setItem({
                 id:customItemId,
                 name:'',
@@ -105,12 +87,6 @@ let renderDisplayModes = (setColorScheme, activeDisplayMode, setDisplayMode, the
 export function ItemSelectionModal(props) {
     // const [activeCurrency, setCurrency] = useState(currencies[0].id);
     const [customItem, setCustomItem] = useState(props.customItem);
-    const [activeDisplayMode, setDisplayMode] = useState('light');
-
-    // useEffect(() => {
-    //     props.customCurrency ? setCustomCurrency(props.customCurrency) : null;
-    //     console.log('A:' + props.customCurrency);
-    // }, [])
     
     return (
         <Modal

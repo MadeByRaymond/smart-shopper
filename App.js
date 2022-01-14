@@ -1,9 +1,7 @@
-// import { Linking } from 'react-native';
 import React from 'react'
 import {Appearance} from 'react-native'
 import { Navigation } from "react-native-navigation";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Provider } from 'react-redux';
 import InAppReview from 'react-native-in-app-review';
 import SpInAppUpdates, {
   NeedsUpdateResponse,
@@ -28,9 +26,6 @@ import Home from "./src/screens/home";
 import ListCreation from "./src/screens/listCreation";
 import ListDetails from "./src/screens/listDetails";
 import Settings from "./src/screens/settings";
-
-// DEMO REDUX SCREEN SCREEN
-// Navigation.registerComponentWithRedux('com.lysts.screen.auth', () => Auth, Provider, store);
 
 // SPLASH SCREEN
 Navigation.registerComponent('com.mbr.smartshopper.screen.splash', () => Splash);
@@ -146,24 +141,6 @@ export const splashRoot = {
   }
 };
 
-// export const onBoardingRoot = {
-//   root: {
-//     component: {
-//       name: 'com.lysts.screen.onboarding',
-//       options : {
-//         statusBar: {
-//           backgroundColor: 'transparent',
-//           drawBehind: true,
-//           translucent: true,
-//           animate: true,
-//           blur: true,
-//           style: 'dark'
-//         }
-//       }
-//     }
-//   }
-// };
-
 export const mainRoot = {
   root: {
     stack: {
@@ -217,15 +194,6 @@ Navigation.setDefaultOptions({
   }
 });
 
-// export const getRoot = async () =>{
-//   try {
-//     return (await AsyncStorage.getItem(asyncStores.skipOnboarding) == "true") ? mainRoot : mainRoot;
-//   } catch(e) {
-//     // return onBoardingRoot;
-//     return mainRoot;
-//   }
-// }
-
 
 Navigation.events().registerAppLaunchedListener(async() => {
   try {
@@ -233,8 +201,6 @@ Navigation.events().registerAppLaunchedListener(async() => {
   } catch (error) {
     if(__DEV__) console.log(e);
   } finally {
-    //  Navigation.setRoot(await isLoggedIn() ? mainRoot : loginRoot);
-    //  Navigation.setRoot(await getRoot());
     Navigation.setRoot(splashRoot);
   }
 });

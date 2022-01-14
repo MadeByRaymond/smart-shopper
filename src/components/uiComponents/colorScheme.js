@@ -1,5 +1,3 @@
-import {Appearance} from 'react-native';
-
 export const colorScheme = {
     light:{
         background: '#FFFFFF',

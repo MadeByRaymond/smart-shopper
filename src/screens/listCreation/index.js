@@ -9,7 +9,7 @@ import {getUniqueId} from 'react-native-device-info';
 import { Navigation } from 'react-native-navigation';
 
 import Header from '../../components/header';
-import {globalStyles, colorScheme, theme} from '../../components/uiComponents'
+import {globalStyles, colorScheme} from '../../components/uiComponents'
 import {ItemSelectionModal} from '../../components/modals'
 import {OpacityLinks, TouchableOSSpecific} from '../../components/links'
 import FloatingButtonView from '../../components/buttons/floatingButtonView'
@@ -31,6 +31,9 @@ export class ListCreation extends Component {
         
         showError: false,
         errorText: '',
+
+        isPriceShown: true,
+        isUnitShown: true,
 
         itemCount: 1,
         categoryCount: 1,
@@ -121,6 +124,8 @@ export class ListCreation extends Component {
                     _id: new ObjectId().toHexString(),
                     _partition : 'public',
                     synced: false,
+                    isPriceShown: this.state.isPriceShown,
+                    isUnitShown: this.state.isUnitShown,
                     name: this.state.listTitle.trim(),
                     items: this.state.listItems,
                     categories: this.state.listItemCategories,
@@ -163,6 +168,8 @@ export class ListCreation extends Component {
                 storedListDetails.currency = this.state.currency;
                 storedListDetails.categories = this.state.listItemCategories;
                 storedListDetails.items = this.state.listItems;
+                storedListDetails.isPriceShown = this.state.isPriceShown;
+                storedListDetails.isUnitShown = this.state.isUnitShown;
                 storedListDetails.dateModified = new Date();
                 storedListDetails.lastActivityLog = `Updated List Details on ${new Date()}`;
             })
@@ -188,8 +195,6 @@ export class ListCreation extends Component {
     }
 
     renderItems = (activeColorScheme) =>{
-        // let fff = this.state.listItemCategories.for
-        // let fff;
         return this.state.listItemCategories.map((category, index) => {
             let itemsList = this.state.listItems.map((item, key) => {
                 if(item.category.trim() == category.categoryId.trim()){
@@ -205,7 +210,7 @@ export class ListCreation extends Component {
                                     style={[styles.listItemTitle, {color: activeColorScheme.textPrimary}]}
                                 />
                             </View>
-                            <View style={styles.listItemPriceWrapper}>
+                            {this.state.isPriceShown ? (<View style={styles.listItemPriceWrapper}>
                                 <Text style={[styles.listItemPrice, {color: activeColorScheme.subtext_3}]}>{this.state.currency.symbol}</Text>
                                 <TextInput
                                     value= {item.price}
@@ -230,10 +235,10 @@ export class ListCreation extends Component {
 
                                     style={[styles.listItemPrice, {color: activeColorScheme.subtext_3, width:dWidth - 16 - 16 - 45 - 45 - 48 - 10 - 15 - 55}]}
                                 />
-                            </View>
+                            </View>) : null}
                         </View>
                         <View style={styles.listItemLeft}>
-                            <View style={styles.listItemUnitsWrapper}>
+                            {this.state.isUnitShown ? (<View style={styles.listItemUnitsWrapper}>
                                 <View style={styles.listItemUnitsBorder}>
                                     <TextInput 
                                         value={item.units}
@@ -259,7 +264,7 @@ export class ListCreation extends Component {
                                     </OpacityLinks>
                                     
                                 </View>
-                            </View>
+                            </View>) : null}
                             <View style={styles.trashButtonWrapper}>
                                 <TouchableOSSpecific onPress={()=> {
                                     let newListItems = this.state.listItems.filter(filterItem => !(filterItem.id == item.id && filterItem.category == item.category))
@@ -505,7 +510,9 @@ export class ListCreation extends Component {
                 currency:listDetails.currency,
                 listTitle: listDetails.name,
                 listItemCategories:listDetails.categories,
-                listItems:listDetails.items
+                listItems:listDetails.items,
+                isPriceShown:listDetails.isPriceShown,
+                isUnitShown:listDetails.isUnitShown,
             }
             // , ()=> realm.close()
             )

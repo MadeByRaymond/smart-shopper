@@ -1,9 +1,7 @@
 import React, { Component } from 'react'
-import { Text, StyleSheet, View, Image, Appearance, ScrollView, Platform } from 'react-native'
+import { Text, StyleSheet, View, ScrollView, Platform } from 'react-native'
 import { connect } from 'react-redux'
-import { Navigation } from "react-native-navigation";
 import LottieView from 'lottie-react-native';
-import {getColorFromURL} from 'rn-dominant-color'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getUniqueId} from 'react-native-device-info';
 import {ObjectId} from 'bson';
@@ -19,9 +17,6 @@ import DocumentPicker, {
   } from 'react-native-document-picker';
 
 // ***** Component Imports *****
-// Icons and Vectors 
-// import SearchIcon from '../../vectors/generalIcons/searchIcon';
-// import {SettingsIcon} from '../../vectors/generalIcons'
 
 // Components 
 import Header from '../../components/header'
@@ -30,7 +25,7 @@ import Button from '../../components/buttons/singleButton'
 import ShoppingLists from '../../components/home/shoppingLists'
 import {colorScheme, globalStyles} from '../../components/uiComponents'
 
-import {ListSchemas, OldListSchemas} from '../../realm-storage/schemas'
+import {ListSchemas} from '../../realm-storage/schemas'
 
 // Includes 
 import {updateComponentAppearance, navigateToScreen} from '../../includes/functions';
@@ -39,9 +34,6 @@ import { OpacityLinks } from '../../components/links';
 
 class Home extends Component {
     state={
-        // color: '#000000',
-        // text: this.props.colorScheme,
-        // items: true,
         shoppingLists : [],
         starredLists: [],
         importFiles: [],
@@ -140,6 +132,7 @@ class Home extends Component {
                     contentContainerStyle={globalStyles.scrollViewContainer}
                     showsVerticalScrollIndicator={false}
                 >
+                    {/* Starred Lists */}
                     {(!this.state.starredLists || this.state.starredLists.length < 1) ? null : <View><Text style={[globalStyles.subtext, {color: activeColorScheme.subtext_1}]}>Your Starred Lists</Text></View>}
                     
                     {this.state.shoppingLists.map((item, key) => {
@@ -161,13 +154,8 @@ class Home extends Component {
                       ) : null
                     })}
 
-                    {/* <ShoppingLists colors={activeColorScheme} starred={true} newScreenProps={{componentId: this.props.componentId}} /> */}
-
+                    {/* Recent Lists */}
                     {(!this.state.shoppingLists || this.state.shoppingLists.length < 1 || this.state.shoppingLists.length == this.state.starredLists.length) ? null : <View><Text style={[globalStyles.subtext, {color: activeColorScheme.subtext_1}]}>Recently Created</Text></View>}
-
-                    {/* <ShoppingLists colors={activeColorScheme} newScreenProps={{componentId: this.props.componentId}} />
-                    <ShoppingLists colors={activeColorScheme} newScreenProps={{componentId: this.props.componentId}} />
-                    <ShoppingLists colors={activeColorScheme} newScreenProps={{componentId: this.props.componentId}} /> */}
 
                     {this.state.shoppingLists.map((item, key) => {
                       return this.state.starredLists.includes(item._id) ? null : (
@@ -206,13 +194,9 @@ class Home extends Component {
             // console.log(file);
                 if (file.isFile() && file.name.indexOf('.smartlist') >= 0) {
                     importFiles.push(file);
-                    // console.log(file);
-                    // return Promise.all([RNFS.stat(file.path), file.path]);
                 }
             });
             this.setState({ importFiles });
-            // console.log('files ==> ', this.state.files);
-            // console.log('importFiles ==> ', importFiles);
 
             if (importFiles.length > 0) {
                 return Promise.all([RNFS.stat(importFiles[0].path), importFiles[0].path]);

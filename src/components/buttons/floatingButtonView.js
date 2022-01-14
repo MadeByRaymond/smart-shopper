@@ -36,7 +36,7 @@ const whatToReturn = (props) =>{
                     ))}
                 </View>
             )
-    
+            break;
         default:
             break;
     }

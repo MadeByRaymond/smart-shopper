@@ -1,6 +1,5 @@
 import React from 'react'
 import { StyleSheet, Text, View, Image } from 'react-native'
-import {Navigation} from 'react-native-navigation'
 
 import {CaretIcon, StarredIcon} from '../../vectors/generalIcons'
 

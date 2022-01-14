@@ -9,9 +9,5 @@ import {allReducers as reducers} from './reducers';
 //   composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 // }
 
-// const configStore = () =>{
-//   return createStore(reducers, compose(applyMiddleware(thunk)))
-// }
-
 
 export default createStore(reducers, compose(applyMiddleware(thunk)));

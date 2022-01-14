@@ -135,7 +135,6 @@ export class Settings extends Component {
                     colorScheme = {activeColorScheme}
                     theme = {this.props.theme}
                     defaultItem = {this.state.defaultCurrency}
-                    // ddd = {(display, id) => {this.setState({defaultCurrency: {id: id,display: display}})}}
                     setDefaultItem = {({id, symbol, name, setCustomItem, closeFunction}) => {
                         AsyncStorage.setItem(asyncStores.currency, JSON.stringify({id,symbol})).then(() => {
                             setCustomItem ? setCustomItem('') : null;
@@ -346,19 +345,6 @@ const styles = StyleSheet.create({
         paddingBottom: 30
     },
 
-    // charityModalBgWrapper:{
-    //     flex: 1, 
-    //     backgroundColor: 'transparent',
-    //     justifyContent: 'flex-end'
-    // },
-    // charityModalBg:{
-    //     paddingHorizontal: 26,
-    //     paddingTop: 48,
-    //     paddingBottom: 30,
-    //     borderTopLeftRadius: 13,
-    //     borderTopRightRadius: 13,
-    //     elevation: -10
-    // },
     charityModalTitle:{
         fontFamily: 'Gilroy-Medium', 
         fontSize: 20,

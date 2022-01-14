@@ -6,8 +6,6 @@ import ActionsModal from 'react-native-modal'
 import Realm from "realm";
 import { Navigation } from 'react-native-navigation';
 import LottieView from 'lottie-react-native';
-import {getUniqueId} from 'react-native-device-info';
-import Clipboard from "@react-native-community/clipboard";
 import * as RNFS from 'react-native-fs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -15,15 +13,14 @@ import Header from '../../components/header';
 import {globalStyles, colorScheme} from '../../components/uiComponents'
 import CheckedIcon from '../../vectors/checkIcon/checkedIcon';
 import FloatingButtonView from '../../components/buttons/floatingButtonView'
-import Button from '../../components/buttons/singleButton'
 import {OpacityLinks} from '../../components/links'
-import {ShareIcon, CopyIcon, EditIcon, TrashIcon, StarredIcon} from '../../vectors/generalIcons'
+import {ShareIcon, EditIcon, TrashIcon, StarredIcon} from '../../vectors/generalIcons'
 
 import {ListSchemas} from '../../realm-storage/schemas'
 
 // Includes 
-import {updateComponentAppearance, navigateToScreen, onShare, randomString} from '../../includes/functions';
-import {dWidth, realmStorePath, currencies,featureImages, mongoClientCluster, asyncStores} from '../../includes/variables';
+import {updateComponentAppearance, navigateToScreen, onShare} from '../../includes/functions';
+import {realmStorePath, currencies,featureImages, asyncStores} from '../../includes/variables';
 
 class ListDetails extends Component {
 
@@ -47,6 +44,8 @@ class ListDetails extends Component {
             _id: this.props.listId,
             _partition : '',
             // synced: false,
+            isPriceShown : true,
+            isUnitShown : true,
             name: '',
             items: [
                 {
@@ -142,8 +141,6 @@ class ListDetails extends Component {
                     ListSchemas.currencySchema
                 ],
             });
-            // console.log('ddd');
-            // console.log("Realm is located at: " + this.realm.path);
             
             this.storedLists = this.realm.objects('list');
             
@@ -191,32 +188,20 @@ class ListDetails extends Component {
             [itemKey]: value
         }
 
-        // if(__DEV__) console.log(JSON.stringify(itemsArray, null, 2));
-
         this.realm.write(() => {
             this.storedListDetails.items = JSON.parse(JSON.stringify(itemsArray));
             this.storedListDetails.dateModified = new Date();
             this.storedListDetails.lastActivityLog = `Updated list item <${itemsArray[itemIndex].id}> - '${itemsArray[itemIndex].title}'`;
         });
-        
-        // this.setState(prevState => {
-        //     // let fppp = JSON.parse(JSON.stringify(prevState.listDetails))
-        //     // console.log({...JSON.parse(JSON.stringify(prevState.listDetails))});
-        //     return ({
-        //         listDetails: {
-        //             ...JSON.parse(JSON.stringify(prevState.listDetails)),
-        //             items: itemsArray
-        //         }
-        //     })
-        // })
+        // State is updated because of added listener 
     }
 
     starList = ()=>{
         if (this.state.isStarred){
             let starredLists = []
             starredLists.push(...this.state.starredLists)
-            let newList = starredLists.filter((val) => (val !== this.state.listDetails._id))
-            // console.log('NewList ==> ', newList);
+            let newList = starredLists.filter((val) => (val !== this.state.listDetails._id));
+
             AsyncStorage.setItem(asyncStores.starredLists, JSON.stringify(newList), ()=>{
                 this.props.refreshView()
                 this.setState({
@@ -233,12 +218,15 @@ class ListDetails extends Component {
                 })
             })
         }
-        // AsyncStorage.setItem(asyncStores.starredLists, )
-        // this.setState((prevState)=> ({isStarred : !prevState.isStarred}))
     }
 
 
     renderListDetails = (activeColorScheme) => {
+        let hideUnit_Price = !this.state.listDetails.isPriceShown && !this.state.listDetails.isUnitShown;
+        let showUnit_Price = this.state.listDetails.isPriceShown && this.state.listDetails.isUnitShown;
+        let showPriceOnly = this.state.listDetails.isPriceShown && !this.state.listDetails.isUnitShown;
+        let showUnitsOnly = !this.state.listDetails.isPriceShown && this.state.listDetails.isUnitShown;
+
       return (
         <View style={{flex: 1}}>
             <Header
@@ -326,7 +314,7 @@ class ListDetails extends Component {
                         <View key={i}>
                             <View style={globalStyles.categoryWrapper}>
                                 <Text style={[globalStyles.subtext, {color: activeColorScheme.subtext_1}]}>{category.categoryName}</Text>
-                                {i == 0 ? <OpacityLinks hitSlop={{top: 20, bottom: 20, left: 20, right: 20}} onPress={() => this.setState(prevState => ({showPrice: !prevState.showPrice}))}><View><Text style={[styles.priceToggle, {color:this.props.theme.primaryColor}]}> {this.state.showPrice ? 'Show Units' : 'Show Prices'}</Text></View></OpacityLinks> : null}
+                                {(i == 0 && showUnit_Price) ? <OpacityLinks hitSlop={{top: 20, bottom: 20, left: 20, right: 20}} onPress={() => this.setState(prevState => ({showPrice: !prevState.showPrice}))}><View><Text style={[styles.priceToggle, {color:this.props.theme.primaryColor}]}> {this.state.showPrice ? 'Show Units' : 'Show Prices'}</Text></View></OpacityLinks> : null}
                             </View>
 
                             {
@@ -341,15 +329,20 @@ class ListDetails extends Component {
                                                     </View>
                                                     <View style={globalStyles.listItemTitleWrapper}><Text style={[globalStyles.listItemTitle, item.status == 'active' ? {color: activeColorScheme.textPrimary} : globalStyles.listItemTitleCrossed]}>{item.title}</Text></View>
                                                 </View>
-                                                <View style={globalStyles.listItemRight}>
+                                                { (hideUnit_Price) 
+                                                    ? null 
+                                                    : (<View style={globalStyles.listItemRight}>
                                                     <Text style={globalStyles.listItemSubtext}>
-                                                        {   
-                                                            this.state.showPrice 
+                                                        {   (showPriceOnly)
+                                                            ? `${this.state.listDetails.currency.symbol} ${item.price}`
+                                                            : (showUnitsOnly)
+                                                            ? `${item.units} ${item.unitSymbol.symbol}`
+                                                            : this.state.showPrice 
                                                             ? `${this.state.listDetails.currency.symbol} ${item.price}` 
                                                             : `${item.units} ${item.unitSymbol.symbol}`
                                                         }
                                                     </Text>
-                                                </View>
+                                                </View>)}
                                             </View>
                                         </OpacityLinks>
                                     ) : null
@@ -387,7 +380,6 @@ class ListDetails extends Component {
                             RNFS.writeFile(filePath, JSON.stringify(this.state.listDetails), 'utf8')
                             .then((success) => {
                                 // console.log('FILE WRITTEN!');
-                                // console.log('Result: ', filePath);
                                 onShare('Share your list', `Here's my list “${this.state.listDetails.name}” on SmartShopper. Get the app on android now: https://play.google.com/store/apps/details?id=com.madebyraymond.smartshopper`, 'Check out my SmartShopper list', 'file://' + filePath, true)
                                 .catch(e =>{
                                     if(__DEV__) console.log(e);
@@ -445,7 +437,7 @@ class ListDetails extends Component {
                                     let starredLists = []
                                     starredLists.push(...this.state.starredLists)
                                     let newList = starredLists.filter((val) => (val !== this.state.listDetails._id))
-                                    // console.log('NewList ==> ', newList);
+                                    
                                     await AsyncStorage.setItem(asyncStores.starredLists, JSON.stringify(newList))
                                 }
 
@@ -582,18 +574,18 @@ const styles = StyleSheet.create({
 
     //     marginBottom: 17
     // },
-    syncModalContentText:{
-        fontFamily: 'Gilroy-Medium', 
-        fontSize: 15.5,
-        lineHeight: 19,
+    // syncModalContentText:{
+    //     fontFamily: 'Gilroy-Medium', 
+    //     fontSize: 15.5,
+    //     lineHeight: 19,
 
-        paddingBottom: 10,
-        opacity: 0.86
-    },
-    syncModalBtnWrapper:{
-        marginTop: 30,
-        marginBottom: 20
-    }
+    //     paddingBottom: 10,
+    //     opacity: 0.86
+    // },
+    // syncModalBtnWrapper:{
+    //     marginTop: 30,
+    //     marginBottom: 20
+    // }
 
     
 })
