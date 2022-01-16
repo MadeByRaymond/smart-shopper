@@ -14,7 +14,7 @@ import {globalStyles, colorScheme} from '../../components/uiComponents'
 import CheckedIcon from '../../vectors/checkIcon/checkedIcon';
 import FloatingButtonView from '../../components/buttons/floatingButtonView'
 import {OpacityLinks} from '../../components/links'
-import {ShareIcon, EditIcon, TrashIcon, StarredIcon} from '../../vectors/generalIcons'
+import {ShareIcon, EditIcon, TrashIcon, StarredIcon, ResetIcon} from '../../vectors/generalIcons'
 
 import {ListSchemas} from '../../realm-storage/schemas'
 
@@ -196,6 +196,23 @@ class ListDetails extends Component {
         // State is updated because of added listener 
     }
 
+    resetListItems = () =>{
+        let itemsArray = JSON.parse(JSON.stringify([...this.state.listDetails.items]));
+
+        let finalItems = itemsArray.map((item) => {
+            return {
+                ...item,
+                status: 'active'
+            }
+        });
+
+        this.realm.write(() => {
+            this.storedListDetails.items = JSON.parse(JSON.stringify(finalItems));
+            this.storedListDetails.dateModified = new Date();
+            this.storedListDetails.lastActivityLog = `Reset all list items`;
+        });
+    }
+
     starList = ()=>{
         if (this.state.isStarred){
             let starredLists = []
@@ -351,9 +368,10 @@ class ListDetails extends Component {
                         </View>
                     )
                 })}
-
+                
                 <View style={styles.priceTotalWrapper}>
-                    <Text style={[styles.priceTotalText, {color: activeColorScheme.textPrimary}]}>Total Price (Est):  </Text><Text style={[styles.priceTotalValue,{color: activeColorScheme.textPrimary}]}>{this.state.listDetails.currency.symbol} {(Math.round(this.totalPrice * 100) / 100).toFixed(2)}</Text>
+                    <OpacityLinks hitSlop={{top: 20, bottom: 20, left: 20, right: 20}}  onPress={this.resetListItems}><Text style={[styles.resetList, {color:this.props.theme.primaryColor}]}>Reset List</Text></OpacityLinks>
+                    {this.state.listDetails.isPriceShown ? (<Text style={{flexDirection: 'row', alignItems: 'baseline'}}><Text style={[styles.priceTotalText, {color: activeColorScheme.textPrimary}]}>Total Price (Est):  </Text><Text style={[styles.priceTotalValue,{color: activeColorScheme.textPrimary}]}>{this.state.listDetails.currency.symbol} {(Math.round(this.totalPrice * 100) / 100).toFixed(2)}</Text></Text>) : null}
                 </View>
             </ScrollView>
 
@@ -406,53 +424,53 @@ class ListDetails extends Component {
                         }, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isSynced */ false, disabledPressAction: ()=>{this.setState({syncModal: true})}},
                         // {text: 'Copy', icon: CopyIcon, onPress:()=>{Clipboard.setString(this.state.listDetails.code)}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isSynced, disabledPressAction: ()=>{this.setState({syncModal: true})}},
                         {text: 'Favorite', icon: StarredIcon, onPress:()=> {this.starList()}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isSynced */ false, disabledPressAction: ()=>{this.setState({syncModal: true})}, isActive: this.state.isStarred},
+                        {text: 'Reset', icon:  ResetIcon, onPress: this.resetListItems, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isOwner */ false, disabledPressAction: ()=>{/* Do Nothing */}},
                         {text: 'Edit', icon:  EditIcon, onPress:()=>{navigateToScreen(
-                                this.props.componentId,
-                                'com.mbr.smartshopper.screen.listCreation',
-                                {
-                                    refreshView: ()=>{
-                                        this.props.refreshView();
-                                        // this.state.isSynced ? this.getSyncedListDetails().then(()=>{
-                                        //     this.totalPrice = 0;
-                                        //     this.state.listDetails.items.map(item => {
-                                        //         (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
-                                        //         this.forceUpdate()
-                                        //     })
-                                        // }) : 
-                                        this.getLocalListDetails().then(()=>{
-                                            this.totalPrice = 0;
-                                            this.state.listDetails.items.map(item => {
-                                                (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
-                                                this.forceUpdate()
-                                            })
-                                        });
-                                    },
-                                    showAsEdit: true,
-                                    listId: this.state.listDetails._id,
-                                    // isSynced: this.state.isSynced,
-                                }
-                            )}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isOwner */ false, disabledPressAction: ()=>{/* Do Nothing */}},
+                            this.props.componentId,
+                            'com.mbr.smartshopper.screen.listCreation',
+                            {
+                                refreshView: ()=>{
+                                    this.props.refreshView();
+                                    // this.state.isSynced ? this.getSyncedListDetails().then(()=>{
+                                    //     this.totalPrice = 0;
+                                    //     this.state.listDetails.items.map(item => {
+                                    //         (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
+                                    //         this.forceUpdate()
+                                    //     })
+                                    // }) : 
+                                    this.getLocalListDetails().then(()=>{
+                                        this.totalPrice = 0;
+                                        this.state.listDetails.items.map(item => {
+                                            (item.price && item.price.trim() != '') ? this.totalPrice += parseFloat(item.price) : null;
+                                            this.forceUpdate()
+                                        })
+                                    });
+                                },
+                                showAsEdit: true,
+                                listId: this.state.listDetails._id,
+                                // isSynced: this.state.isSynced,
+                            }
+                        )}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isOwner */ false, disabledPressAction: ()=>{/* Do Nothing */}},
                         {text: 'Delete', icon: TrashIcon, onPress: async ()=>{
-                                if(this.state.isStarred){
-                                    let starredLists = []
-                                    starredLists.push(...this.state.starredLists)
-                                    let newList = starredLists.filter((val) => (val !== this.state.listDetails._id))
-                                    
-                                    await AsyncStorage.setItem(asyncStores.starredLists, JSON.stringify(newList))
-                                }
+                            if(this.state.isStarred){
+                                let starredLists = []
+                                starredLists.push(...this.state.starredLists)
+                                let newList = starredLists.filter((val) => (val !== this.state.listDetails._id))
+                                
+                                await AsyncStorage.setItem(asyncStores.starredLists, JSON.stringify(newList))
+                            }
 
-                                this.realm.write(() => {
-                                    // Delete the task from the realm.
-                                    this.realm.delete(this.storedListDetails)
-                                    // Discard the reference.
-                                    // this.storedListDetails = null
-                                });
+                            this.realm.write(() => {
+                                // Delete the task from the realm.
+                                this.realm.delete(this.storedListDetails)
+                                // Discard the reference.
+                                // this.storedListDetails = null
+                            });
 
-                                // this.realm.close();
-                                this.props.refreshView();
-                                Navigation.pop(this.props.componentId)
-                            }, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isOwner */ false, disabledPressAction: ()=>{/* Do Nothing */}
-                        }
+                            // this.realm.close();
+                            this.props.refreshView();
+                            Navigation.pop(this.props.componentId)
+                        }, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: /* !this.state.isOwner */ false, disabledPressAction: ()=>{/* Do Nothing */}}
                     ]
                     // : [
                     //     {text: 'Share', icon: ShareIcon, onPress:()=>{alert('pie')}, onHold: ()=>{this.setState({showButtonLabels: true})}, disabledState: !this.state.isSynced, disabledPressAction: ()=>{this.setState({syncModal: true})}},
@@ -540,9 +558,10 @@ const styles = StyleSheet.create({
 
     priceTotalWrapper:{
         flexDirection: 'row',
-        justifyContent: 'flex-end',
-        alignItems: 'flex-end',
-        paddingHorizontal: 3
+        justifyContent: 'space-between',
+        alignItems: 'baseline',
+        paddingHorizontal: 3,
+        paddingVertical: 10
     },
     priceTotalText:{
         fontFamily: 'Gilroy-Medium',
@@ -553,6 +572,16 @@ const styles = StyleSheet.create({
         fontFamily: 'Gilroy-Medium',
         fontSize: 24,
         lineHeight: 29,
+    },
+
+    resetListWrapper:{
+        alignItems: 'center',
+        paddingVertical: 10
+    },
+    resetList:{
+        fontFamily: 'Gilroy-Medium',
+        fontSize: 16,
+        paddingBottom: 2
     },
 
     // syncModalBgWrapper:{

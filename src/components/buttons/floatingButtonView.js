@@ -61,7 +61,7 @@ const FloatingButtonView = (props) => {
                 locations={[0.05,0.2,1]} 
                 style={[styles.container,{paddingBottom: props.type == 'multiButtons' ? 30 : 35}]}
             >
-                <Shadow style={[styles.buttonShadow, {shadowColor: props.theme.primaryColor, shadowOpacity: props?.colorScheme == 'dark' ? 0.25 : 0.4}]}>
+                <Shadow style={[styles.buttonShadow, {shadowColor: props.theme.primaryColor, shadowOpacity: props?.colorScheme == 'dark' ? 0.15 : 0.4}]}>
                     {whatToReturn(props)}
                     
                 </Shadow>
@@ -84,10 +84,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     buttonShadow:{
-        shadowOffset: {width: 0, height: 6},
+        shadowOffset: {width: 0, height: 4},
         shadowOpacity: 0.4,
         shadowColor: "#C06A46",
-        shadowRadius: 18,
+        shadowRadius: 10,
         borderRadius: 1000,
         backgroundColor: 'transparent',
         overflow: 'hidden'

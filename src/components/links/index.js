@@ -3,7 +3,7 @@ import { Platform, TouchableOpacity, TouchableNativeFeedback } from 'react-nativ
 
 export const OpacityLinks = (props) => {
     return (
-        <TouchableOpacity activeOpacity={0.5} {...props} >
+        <TouchableOpacity activeOpacity={0.5} {...props} delayLongPress={200} >
             {props.children}
         </TouchableOpacity>
     )

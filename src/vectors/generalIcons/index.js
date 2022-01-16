@@ -8,6 +8,7 @@ import EditIcon from './editIcon';
 import ImportIcon from './importIcon';
 import MenuHalfedIcon from './menuHalfedIcon';
 import MenuIcon from './menuIcon';
+import ResetIcon from './resetIcon';
 import ShareIcon from './shareIcon';
 import SettingsIcon from './settingsIcon';
 import SearchIcon from './searchIcon';
@@ -25,6 +26,7 @@ EditIcon,
 ImportIcon,
 MenuHalfedIcon,
 MenuIcon,
+ResetIcon,
 ShareIcon,
 SettingsIcon,
 SearchIcon,

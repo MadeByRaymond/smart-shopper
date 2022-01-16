@@ -67,11 +67,11 @@ const Header = (props) => {
                 </View>)
                 : props.hideBackButton 
                 ? <View><Text style={[styles.noBackTitle, {color: props.colors.textPrimary}]}>{props.title ? props.title : null}</Text></View>
-                : <OpacityLinks onPress={()=>{
+                : <OpacityLinks hitSlop={{top: 20, bottom: 20, left: 20, right: 20}} onPress={()=>{
                     Navigation.pop(props.componentId)
                 }}><View><BackIcon width={24} height={21} colors={props.colors} /></View></OpacityLinks>
             }
-            {props.title && !props.hideBackButton ? <View><Text style={[styles.withBackTitle,{color: props.colors.subtext_1}]}>{props.title}</Text></View> : null }
+            {props.title && !props.hideBackButton ? <View style={{paddingLeft: props.titlePaddingLeft ? props.titlePaddingLeft : 0}}><Text style={[styles.withBackTitle,{color: props.colors.subtext_1}]}>{props.title}</Text></View> : null }
             <View style={styles.leftIconsWrapper}>
                 {/* Search Icon  */}
                 {checkIfDisplayIcon(props.leftIcons, 'search') ? showSearchBar ? null : <OpacityLinks onPress={()=> setShowSearchBar(true)}><View style={styles.leftIcon}><SearchIcon width={24} height={21} colors={props.colors} /></View></OpacityLinks> : null}
@@ -90,7 +90,9 @@ const Header = (props) => {
                 {/* Menu Icon  */}
                 {checkIfDisplayIcon(props.leftIcons, 'menu') ? <OpacityLinks onPress={props.menuIconAction}><View style={styles.leftIcon}><MenuIcon width={24} height={21} colors={props.colors} /></View></OpacityLinks> : null}
                 {/* CurrencySwap Icon  */}
-                {checkIfDisplayIcon(props.leftIcons, 'currencySwap') ? <OpacityLinks onPress={props.currencySwapIconAction}><View style={styles.leftIcon}><CurrencySwapIcon width={28} height={28} colors={props.colors} /></View></OpacityLinks> : null}
+                {checkIfDisplayIcon(props.leftIcons, 'currencySwap') ? <OpacityLinks onPress={props.currencySwapIconAction}><View style={styles.leftIcon}><CurrencySwapIcon width={23} height={23} colors={props.colors} /></View></OpacityLinks> : null}
+                {/* Custom Settings Icon  */}
+                {checkIfDisplayIcon(props.leftIcons, 'customSettings') ? <OpacityLinks onPress={props.settingsIconAction}><View style={styles.leftIcon}><SettingsIcon width={24} height={23} colors={props.colors} /></View></OpacityLinks> : null}
             </View>
         </View>
     )

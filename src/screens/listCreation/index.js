@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
-import { View, Text, Image, TextInput, ScrollView, StyleSheet } from 'react-native'
+import { View, Text, Image, TextInput, ScrollView, StyleSheet, Switch } from 'react-native'
 import { connect } from 'react-redux'
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import FeatureImagesModal from 'react-native-modal';
+import Modal from 'react-native-modal';
 import Realm from "realm";
 import {ObjectId} from 'bson';
 import {getUniqueId} from 'react-native-device-info';
@@ -40,6 +40,8 @@ export class ListCreation extends Component {
 
         activeFeatureImage: featureImages[0].id,
         featureImagesModal: false,
+
+        actionsModal: false,
 
         setUnitsSymbolModal:{
             visibility: false,
@@ -442,7 +444,7 @@ export class ListCreation extends Component {
             />) : null}
 
 
-            <FeatureImagesModal 
+            <Modal 
                 isVisible={this.state.featureImagesModal}
                 hideModalContentWhileAnimating={true}
                 swipeDirection={'down'}
@@ -488,7 +490,61 @@ export class ListCreation extends Component {
                         </ScrollView>
                     </View>  
                 </View>
-            </FeatureImagesModal>
+            </Modal>
+
+            <Modal
+                isVisible={this.state.showActionsModal}
+                hideModalContentWhileAnimating={true}
+                swipeDirection={'down'}
+                animationIn= {'slideInUp'}
+                animationInTiming={1}
+                animationOut= {'slideOutDown'}
+                animationOutTiming={500}
+                backdropOpacity={0.21}
+                propagateSwipe={true}
+                onBackButtonPress= {()=> this.setState({showActionsModal: false})}
+                onBackdropPress= {()=> this.setState({showActionsModal: false})}
+                onSwipeComplete= {()=> this.setState({showActionsModal: false})}
+                style={globalStyles.globalModalLayout}
+            >
+                <View style={[globalStyles.modalBg,{backgroundColor: activeColorScheme.modalBackground, paddingHorizontal:16, paddingTop: 32}]}>
+                    <View><Text style={[globalStyles.modalTitle, {color: activeColorScheme.textPrimary}]}>List Settings</Text></View>
+                    <View style={{marginTop: 16}}>
+                        <OpacityLinks onPress={() => this.setState((prevState)=>({isPriceShown: !prevState.isPriceShown}))}>
+                            <View style={[globalStyles.listItem, {borderBottomColor: activeColorScheme.listBorder}]}>
+                                <View style={globalStyles.listItemLeft}>
+                                    <View style={globalStyles.listItemTitleWrapper}><Text style={[globalStyles.listItemTitle, {color: activeColorScheme.textPrimary}]}>Show Prices</Text></View>
+                                </View>
+                                <View style={globalStyles.listItemRight}>
+                                    <Switch
+                                        trackColor={{ false: this.props.theme.secondaryColor, true: this.props.theme.primaryColor }}
+                                        thumbColor={this.props.theme.gradientColors[1]}
+                                        ios_backgroundColor="#FFEEB8"
+                                        onValueChange={() => this.setState((prevState)=>({isPriceShown: !prevState.isPriceShown}))}
+                                        value={this.state.isPriceShown}
+                                    />
+                                </View>
+                            </View>
+                        </OpacityLinks>
+                        <OpacityLinks onPress={() => this.setState((prevState)=>({isUnitShown: !prevState.isUnitShown}))}>
+                            <View style={[globalStyles.listItem, {borderBottomColor: activeColorScheme.listBorder}]}>
+                                <View style={globalStyles.listItemLeft}>
+                                    <View style={globalStyles.listItemTitleWrapper}><Text style={[globalStyles.listItemTitle, {color: activeColorScheme.textPrimary}]}>Show Units</Text></View>
+                                </View>
+                                <View style={globalStyles.listItemRight}>
+                                    <Switch
+                                        trackColor={{ false: this.props.theme.secondaryColor, true: this.props.theme.primaryColor }}
+                                        thumbColor={this.props.theme.gradientColors[1]}
+                                        ios_backgroundColor="#FFEEB8"
+                                        onValueChange={() => this.setState((prevState)=>({isUnitShown: !prevState.isUnitShown}))}
+                                        value={this.state.isUnitShown}
+                                    />
+                                </View>
+                            </View>
+                        </OpacityLinks>
+                    </View>
+                </View>
+            </Modal>
         </View>
     )
 
@@ -505,6 +561,9 @@ export class ListCreation extends Component {
         }).then(realm => {
             let listDetails = JSON.parse(JSON.stringify(realm.objects('list').filtered(`_id == '${this.props.listId}'`)[0]));
             // console.log(JSON.stringify(realm.objects('list').filtered(`_id == '${this.props.listId}'`)[0], null, 2));
+            let lastItemId = listDetails.items[listDetails.items.length - 1].id
+            let lastCategoryId = listDetails.categories[listDetails.categories.length - 1].categoryId
+            
             this.setState({
                 activeFeatureImage: listDetails.featureImage,
                 currency:listDetails.currency,
@@ -513,6 +572,8 @@ export class ListCreation extends Component {
                 listItems:listDetails.items,
                 isPriceShown:listDetails.isPriceShown,
                 isUnitShown:listDetails.isUnitShown,
+                itemCount: parseInt(lastItemId.substring(lastItemId.indexOf('item-') + 5)),
+                categoryCount: parseInt(lastCategoryId.substring(lastCategoryId.indexOf('category-') + 9))
             }
             // , ()=> realm.close()
             )
@@ -530,9 +591,11 @@ export class ListCreation extends Component {
                 <Header
                     colors={activeColorScheme} 
                     title = {this.props.showAsEdit ? 'Update List' : 'New List'}
+                    titlePaddingLeft = {this.state.isPriceShown ? 24 + 8 + 8 + 8 + 8 : 16}
                     hideBackButton = {false}
-                    leftIcons = {['currencySwap']}
+                    leftIcons = {this.state.isPriceShown ? ['currencySwap', 'customSettings'] : ['customSettings']}
                     currencySwapIconAction = {()=> this.setState({showCurrencyModal: true, currencyModalOpenedOnce: true})}
+                    settingsIconAction = {()=>{this.setState({showActionsModal: true})}}
 
                     componentId = {this.props.componentId}
                  />

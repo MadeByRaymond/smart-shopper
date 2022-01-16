@@ -98,10 +98,11 @@ let startupFunctions = async() => {
 
   // Set App Active Theme 
   try {
-    let appTheme = await AsyncStorage.getItem(asyncStores.theme)
+    let appTheme = await AsyncStorage.getItem(asyncStores.theme);
     if(typeof appTheme == 'undefined' || appTheme == null || appTheme.trim() == ''){
       throw 'Default App Theme Not Set'
     }
+    await ReduxStore.dispatch(setTheme(appTheme))
   } catch (error) {
     await AsyncStorage.setItem(asyncStores.theme, Object.keys(theme)[0]);
     await ReduxStore.dispatch(setTheme(Object.keys(theme)[0]))
