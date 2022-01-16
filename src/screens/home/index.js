@@ -40,6 +40,7 @@ class Home extends Component {
         importContent: null,
         isValidImport: false,
         invalidReason: null,
+        isLoadingLists: true,
 
         importModal: false,
         showImportAction: false,
@@ -94,17 +95,20 @@ class Home extends Component {
 
             // console.log('Starred lists', starredLists);
 
-            this.setState({shoppingLists, starredLists})
+            this.setState({shoppingLists, starredLists, isLoadingLists: false})
             // realm.close();
         }).catch(e => {
             if(__DEV__) console.log(e);
+            this.setState({shoppingLists: [], isLoadingLists: false})
         })
     }
 
     renderView = (activeColorScheme) =>{
         let renderView;
         
-        if ((!this.state.shoppingLists || this.state.shoppingLists.length < 1)) {
+        if (this.state.isLoadingLists) {
+            
+        } else if ((!this.state.shoppingLists || this.state.shoppingLists.length < 1)) {
             let ArrowIcon = require('../../vectors/generalIcons').ArrowIcon;
             renderView = (<View style={styles.emptyStateWrapper}>
                 <LottieView 
@@ -557,7 +561,7 @@ class Home extends Component {
                 </ImportModal>
                 
 
-                {(this.state.shoppingLists.length < 1) ? null : (<FloatingButtonView 
+                {(this.state.isLoadingLists || this.state.shoppingLists.length < 1) ? null : (<FloatingButtonView 
                     type='singleButton'
                     content={{text:'Create new list'}} 
                     theme={this.props.theme} 
